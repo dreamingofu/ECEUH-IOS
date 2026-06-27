@@ -5,6 +5,7 @@ struct RatingBar: View {
     let label: String
     let fraction: Double // 0…1
     let valueText: String
+    var tint: Color = EE.accent
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -23,7 +24,7 @@ struct RatingBar: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(EE.bgRaised)
-                    Capsule().fill(EE.accent)
+                    Capsule().fill(tint)
                         .frame(width: max(0, min(1, fraction)) * geo.size.width)
                 }
             }
