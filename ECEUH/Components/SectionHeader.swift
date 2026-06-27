@@ -1,8 +1,6 @@
 import SwiftUI
 
-/// A reusable screen/section header: an accent kicker, a title, and an optional
-/// subtitle. Used at the top of content screens (the native analog of the
-/// Flutter `HeroCard`).
+/// A screen/section header: an accent kicker, a title, and an optional subtitle.
 struct SectionHeader: View {
     var kicker: String? = nil
     let title: String
@@ -10,19 +8,14 @@ struct SectionHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            if let kicker {
-                Text(kicker)
-                    .font(.caption.weight(.semibold))
-                    .textCase(.uppercase)
-                    .kerning(0.7)
-                    .foregroundStyle(Color.accentColor)
-            }
+            if let kicker { Text(kicker).eeKicker() }
             Text(title)
                 .font(.title.weight(.bold))
+                .foregroundStyle(EE.text)
             if let subtitle {
                 Text(subtitle)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(EE.textMuted)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

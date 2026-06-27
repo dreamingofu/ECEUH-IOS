@@ -1,38 +1,33 @@
 import Foundation
 
-/// The five primary tabs, mirroring the Flutter app's PillNav shell.
-/// (Academy / Research / Clubs / Ratings / Account.)
+/// The four primary tabs of the redesigned app (Home, Archives, Faculty, Settings).
 enum AppTab: Int, CaseIterable, Identifiable {
-    case academy, research, clubs, ratings, account
+    case home, archives, faculty, settings
     var id: Int { rawValue }
 
     var title: String {
         switch self {
-        case .academy:  "Academy"
-        case .research: "Research"
-        case .clubs:    "Clubs"
-        case .ratings:  "Ratings"
-        case .account:  "Account"
+        case .home:     "Home"
+        case .archives: "Archives"
+        case .faculty:  "Faculty"
+        case .settings: "Settings"
         }
     }
 
     var symbol: String {
         switch self {
-        case .academy:  "graduationcap.fill"
-        case .research: "testtube.2"
-        case .clubs:    "person.3.fill"
-        case .ratings:  "chart.bar.fill"
-        case .account:  "person.crop.circle"
+        case .home:     "house.fill"
+        case .archives: "books.vertical.fill"
+        case .faculty:  "star.fill"
+        case .settings: "gearshape.fill"
         }
     }
 }
 
 /// Typed navigation destinations pushed within a tab's `NavigationStack`.
-/// Mirrors the GoRouter nested routes (`/archives/course/:slug/...`, `/clubs/:slug`).
 enum Route: Hashable {
-    case courseHub(slug: String)
-    case fileLibrary(slug: String)
-    case externalLinks(slug: String)
+    case courseDetail(slug: String)
+    case clubs
     case clubDetail(slug: String)
     case privacy
     case deleteAccount

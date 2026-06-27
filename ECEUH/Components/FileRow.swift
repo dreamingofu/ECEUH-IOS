@@ -1,64 +1,37 @@
 import SwiftUI
 
-/// A file entry row: type badge, version picker, title/description, and
-/// Preview / Share / Save actions. The action closures are wired to real
-/// services in Phase 5; the version `Menu` selects which `FileVersion` the
-/// actions operate on.
+/// A file entry card (`ee-filerow`): a file-type badge, the version, title and
+/// description, and Preview / Save / Share actions that open the action sheet.
 struct FileRow: View {
     let file: FileEntry
-    var onPreview: (FileVersion) -> Void = { _ in }
-    var onShare: (FileVersion) -> Void = { _ in }
-    var onSave: (FileVersion) -> Void = { _ in }
+    var onOpen: () -> Void
 
-    @State private var selected: FileVersion?
-
-    private var version: FileVersion { selected ?? file.primary }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                FileTypeBadge(type: file.type)
-                Spacer()
-                versionControl
-            }
-
-            Text(file.title).font(.headline)
-            if !file.desc.isEmpty {
-                Text(file.desc).font(.subheadline).foregroundStyle(.secondary)
-            }
-
-            HStack(spacing: 8) {
-                Button { onPreview(version) } label: { Label("Preview", systemImage: "eye") }
-                    .buttonStyle(.bordered)
-                Button { onShare(version) } label: { Label("Share", systemImage: "square.and.arrow.up") }
-                    .buttonStyle(.bordered)
-                Button { onSave(version) } label: { Label("Save", systemImage: "arrow.down.to.line") }
-                    .buttonStyle(.borderedProminent)
-            }
-            .font(.caption)
-            .controlSize(.small)
-            .buttonBorderShape(.capsule)
-        }
-        .padding(.vertical, 4)
+    private var versionText: String {
+        "\(file.primary.label) · .\(file.primary.ext.lowercased())"
     }
 
-    @ViewBuilder
-    private var versionControl: some View {
-        let detail = "\(version.label) · .\(version.ext.lowercased())"
-        if file.versionCount > 1 {
-            Menu {
-                ForEach(file.versions, id: \.url) { v in
-                    Button(v.label) { selected = v }
-                }
-            } label: {
-                Label(detail, systemImage: "chevron.down")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Badge(type: file.type, label: file.label)
+                Spacer()
+                Text(versionText)
+                    .font(.eeMono(.caption))
+                    .foregroundStyle(EE.textDim)
             }
-        } else {
-            Text(detail)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Text(file.title).font(.headline).foregroundStyle(EE.text)
+            if !file.desc.isEmpty {
+                Text(file.desc).font(.subheadline).foregroundStyle(EE.textMuted)
+            }
+            HStack(spacing: 8) {
+                EEButton(title: "Preview", icon: "eye", variant: .tinted, size: .small, action: onOpen)
+                EEButton(title: "Save", icon: "arrow.down.to.line", variant: .gray, size: .small, action: onOpen)
+                EEButton(title: "Share", icon: "square.and.arrow.up", variant: .gray, size: .small, action: onOpen)
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(EE.bgCard, in: RoundedRectangle(cornerRadius: Radii.lg, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Radii.lg, style: .continuous).strokeBorder(EE.border))
     }
 }
