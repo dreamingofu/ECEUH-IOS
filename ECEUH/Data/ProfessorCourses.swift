@@ -1,7 +1,8 @@
 import Foundation
 
-/// 1:1 port of `lib/data/professors.dart`. Drives the Faculty screen and the
-/// home-screen faculty spotlight.
+/// Faculty data — imported 1:1 from the web app's `professors-data.js`
+/// (`window.ECEUH_COURSES`). Drives the Faculty screen and the home spotlight.
+/// `null` ratings stay nil → an honest "unrated" state (never a fabricated number).
 let kProfessorCourses: [ProfessorCourse] = [
     ProfessorCourse(id: "engi1100", code: "ENGI 1100", title: "Introduction to Engineering", profs: [
         Professor(name: "Dr. Alexandra Landon", shortName: "Landon", initials: "AL", dept: "Engineering Dept.",
@@ -74,5 +75,47 @@ let kProfessorCourses: [ProfessorCourse] = [
             rmpUrl: "https://www.ratemyprofessors.com/professor/3000524"),
         Professor(name: "Dr. Yufang Sun", shortName: "Sun", initials: "YS", dept: "Electrical Engineering Dept.",
             rmpUrl: "https://www.ratemyprofessors.com/professor/3163565"),
+    ]),
+    ProfessorCourse(id: "ece3155", code: "ECE 3155", title: "Electronics Lab", profs: [
+        Professor(name: "Prof. Name", shortName: "TBD", initials: "??", dept: "Electrical Engineering Dept."),
+    ]),
+    ProfessorCourse(id: "ece3355", code: "ECE 3355", title: "Electronics", profs: [
+        Professor(name: "Dr. Dmitri Litvinov", shortName: "Litvinov", initials: "DL", dept: "Electrical Engineering Dept.",
+            overall: 3.5, difficulty: 3.25, wouldTake: 50, rmpUrl: "https://www.ratemyprofessors.com/professor/1290156"),
+        Professor(name: "Dr. David P Shattuck", shortName: "Shattuck", initials: "DS", dept: "Electrical Engineering Dept.",
+            overall: 4.83, difficulty: 4.33, wouldTake: 71, rmpUrl: "https://www.ratemyprofessors.com/professor/238536"),
+    ]),
+    ProfessorCourse(id: "ece3337", code: "ECE 3337", title: "Signals & Systems Analysis", profs: [
+        Professor(name: "Stuart Long", shortName: "Long", initials: "SL", dept: "Electrical Engineering Dept."),
+        Professor(name: "Dr. Sebastian Csutak", shortName: "Csutak", initials: "SC", dept: "Electrical Engineering Dept.",
+            overall: 1.0, difficulty: 6.0, wouldTake: 0, rmpUrl: "https://www.ratemyprofessors.com/professor/3127242"),
+        Professor(name: "Dr. Dmitri Litvinov", shortName: "Litvinov", initials: "DL", dept: "Electrical Engineering Dept.",
+            overall: 1.83, difficulty: 3.67, wouldTake: 50, rmpUrl: "https://www.ratemyprofessors.com/professor/1290156"),
+        Professor(name: "Dr. Badrinath Roysam", shortName: "Roysam", initials: "BR", dept: "Electrical Engineering Dept.",
+            overall: 4.2, difficulty: 3.9, wouldTake: 77, rmpUrl: "https://www.ratemyprofessors.com/professor/2296491"),
+    ]),
+    ProfessorCourse(id: "ece3317", code: "ECE 3317", title: "Applied EM Waves", profs: [
+        Professor(name: "Dr. Stuart Long", shortName: "Long", initials: "SL", dept: "Electrical Engineering Dept.",
+            overall: 4.5, difficulty: 4.22, wouldTake: 100, rmpUrl: "https://www.ratemyprofessors.com/professor/868441"),
+        Professor(name: "Dr. David Jackson", shortName: "Jackson", initials: "DJ", dept: "Electrical Engineering Dept.",
+            overall: 3.0, difficulty: 4.0, wouldTake: 60, rmpUrl: "https://www.ratemyprofessors.com/professor/413232"),
+        Professor(name: "Dr. Yufang Sun", shortName: "Sun", initials: "YS", dept: "Electrical Engineering Dept.",
+            rmpUrl: "https://www.ratemyprofessors.com/professor/3163565"),
+        Professor(name: "Dr. Jiefu Chen", shortName: "Chen", initials: "JC", dept: "Electrical Engineering Dept.",
+            rmpUrl: "https://www.ratemyprofessors.com/professor/3080859"),
+    ]),
+    ProfessorCourse(id: "ece3436", code: "ECE 3436", title: "Microprocessor Systems", profs: [
+        Professor(name: "Dr. Diana De La Rosa-Pohl", shortName: "TBD", initials: "??", dept: "Electrical Engineering Dept.",
+            overall: 4.88, difficulty: 2.0, wouldTake: 92, rmpUrl: "https://www.ratemyprofessors.com/professor/729505"),
+        Professor(name: "Dr. Harry Le", shortName: "Le", initials: "HL", dept: "Electrical Engineering Dept.",
+            overall: 3.0, difficulty: 5.0, wouldTake: 38, rmpUrl: "https://www.ratemyprofessors.com/professor/2480417"),
+        Professor(name: "Dr. Jianfeng Zheng", shortName: "Zheng", initials: "JZ", dept: "Electrical Engineering Dept.",
+            rmpUrl: "https://www.ratemyprofessors.com/professor/3080859"),
+    ]),
+    ProfessorCourse(id: "ece3340", code: "ECE 3340", title: "Numerical Methods", profs: [
+        Professor(name: "Dr. David Mayerich", shortName: "Mayerich", initials: "DM", dept: "Electrical Engineering Dept.",
+            overall: 4.2, difficulty: 2.6, wouldTake: 100, rmpUrl: "https://www.ratemyprofessors.com/professor/2092494"),
+        Professor(name: "Dr. Jianfeng Zheng", shortName: "Zheng", initials: "JZ", dept: "Electrical Engineering Dept.",
+            rmpUrl: "https://www.ratemyprofessors.com/professor/3080859"),
     ]),
 ]
