@@ -23,6 +23,11 @@ jobs:
       - name: Xcode version
         run: xcodebuild -version
 
+      # Defensive: lets SwiftPM use its cloned bare repos if the runner ever sets
+      # safe.bareRepository=explicit.
+      - name: Allow SwiftPM bare repositories
+        run: git config --global safe.bareRepository all
+
       - name: Build (no code signing)
         run: |
           set -o pipefail

@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AA00000000000000000000G3 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = AA00000000000000000000G2 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		AA00000000000000000000E1 /* ECEUH.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ECEUH.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA00000000000000000000E2 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -30,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA00000000000000000000G3 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -39,6 +45,7 @@
 		AA00000000000000000000C1 = {
 			isa = PBXGroup;
 			children = (
+				AA00000000000000000000E2 /* Config.xcconfig */,
 				AA00000000000000000000C3 /* ECEUH */,
 				AA00000000000000000000C2 /* Products */,
 			);
@@ -71,6 +78,9 @@
 				AA00000000000000000000C3 /* ECEUH */,
 			);
 			name = ECEUH;
+			packageProductDependencies = (
+				AA00000000000000000000G2 /* Supabase */,
+			);
 			productName = ECEUH;
 			productReference = AA00000000000000000000E1 /* ECEUH.app */;
 			productType = "com.apple.product-type.application";
@@ -100,6 +110,9 @@
 			);
 			mainGroup = AA00000000000000000000C1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA00000000000000000000G1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AA00000000000000000000C2 /* Products */;
 			projectDirPath = "";
@@ -252,6 +265,7 @@
 		};
 		AA0000000000000000000121 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA00000000000000000000E2 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -276,6 +290,7 @@
 		};
 		AA0000000000000000000122 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA00000000000000000000E2 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -320,6 +335,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AA00000000000000000000G1 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA00000000000000000000G2 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA00000000000000000000G1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA00000000000000000000B1 /* Project object */;
 }
