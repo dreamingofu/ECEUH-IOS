@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Capabilities for Sign in with Apple (Phase 6) and Push Notifications (Phase 4).
+  NOTE: CODE_SIGN_ENTITLEMENTS is intentionally NOT set in the project yet —
+  these entitlements need a Development Team + provisioning to validate, so they
+  are wired on once a team is configured. The file is kept here, ready to enable.
+-->
+<plist version="1.0">
+<dict>
+	<key>aps-environment</key>
+	<string>development</string>
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>
