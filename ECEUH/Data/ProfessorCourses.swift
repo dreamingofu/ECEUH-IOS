@@ -105,7 +105,7 @@ let kProfessorCourses: [ProfessorCourse] = [
             rmpUrl: "https://www.ratemyprofessors.com/professor/3080859"),
     ]),
     ProfessorCourse(id: "ece3436", code: "ECE 3436", title: "Microprocessor Systems", profs: [
-        Professor(name: "Dr. Diana De La Rosa-Pohl", shortName: "TBD", initials: "??", dept: "Electrical Engineering Dept.",
+        Professor(name: "Dr. Diana De La Rosa-Pohl", shortName: "De La Rosa-Pohl", initials: "DR", dept: "Electrical Engineering Dept.",
             overall: 4.88, difficulty: 2.0, wouldTake: 92, rmpUrl: "https://www.ratemyprofessors.com/professor/729505"),
         Professor(name: "Dr. Harry Le", shortName: "Le", initials: "HL", dept: "Electrical Engineering Dept.",
             overall: 3.0, difficulty: 5.0, wouldTake: 38, rmpUrl: "https://www.ratemyprofessors.com/professor/2480417"),
