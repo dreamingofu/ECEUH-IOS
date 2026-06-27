@@ -127,7 +127,8 @@ struct HomeScreen: View {
                 let tier = RatingTier(overall: spot.prof.overall)
                 EECard(glow: true) {
                     HStack(spacing: 14) {
-                        Avatar(initials: spot.prof.initials, size: 64, gradient: tier.gradient)
+                        Avatar(initials: spot.prof.initials, size: 64,
+                               gradient: AvatarPalette.gradient(for: spot.prof.name))
                         VStack(alignment: .leading, spacing: 4) {
                             Text(spot.course)
                                 .font(.eeMono(.caption2)).textCase(.uppercase).kerning(1.2)
