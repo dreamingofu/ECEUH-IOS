@@ -1,0 +1,47 @@
+import Foundation
+
+/// 1:1 port of `lib/data/course_links.dart`. Drives the External Resources screens.
+let kCourseLinks: [String: [LinkEntry]] = [
+    "dld": [
+        LinkEntry(title: "NandGame", url: "https://www.nandgame.com",
+            desc: "Build a computer from NAND gates upward and get an intuition for how abstract digital logic becomes a layered machine."),
+        LinkEntry(title: "Logic.ly", url: "https://logic.ly",
+            desc: "A clean browser-based simulator for testing logic circuits beyond the site's built-in tools."),
+        LinkEntry(title: "MIT OCW 6.004", url: "https://ocw.mit.edu/courses/6-004-computation-structures-spring-2017/",
+            desc: "Lecture notes and problem sets that ground digital logic in a larger computation-structures arc."),
+        LinkEntry(title: "GeeksForGeeks DLD", url: "https://www.geeksforgeeks.org/digital-electronics-logic-design-tutorials/",
+            desc: "Readable written tutorials for quick reinforcement after class or before a quiz."),
+        LinkEntry(title: "Boolean-Algebra.com", url: "https://www.boolean-algebra.com",
+            desc: "Useful when you want a second pass on simplification, truth tables, or algebraic checking."),
+        LinkEntry(title: "Neso Academy Playlist", url: "https://www.youtube.com/playlist?list=PLBlnK6fEyqRjMH3mWf6kwqiTbT798eAOm",
+            desc: "A good companion set of walkthrough videos when you want the concepts explained from another angle."),
+    ],
+    "circuits2": [
+        LinkEntry(title: "Falstad Circuit Simulator", url: "https://falstad.com/circuit/",
+            desc: "A fast way to test AC intuition, filters, and resonance behavior without leaving the browser."),
+        LinkEntry(title: "All About Circuits", url: "https://www.allaboutcircuits.com/textbook/alternating-current/",
+            desc: "A solid alternating-current reference when you need another pass on phasors, impedance, and power."),
+        LinkEntry(title: "MIT OCW 6.002", url: "https://ocw.mit.edu/courses/6-002-circuits-and-electronics-spring-2007/",
+            desc: "Lecture materials and practice problems that pair well with the tougher analysis-heavy parts of the course."),
+        LinkEntry(title: "Khan Academy Circuit Analysis", url: "https://www.khanacademy.org/science/electrical-engineering/ee-circuit-analysis-topic",
+            desc: "Good for brushing fundamentals before diving back into phasor or filter-heavy homework."),
+        LinkEntry(title: "CircuitLab", url: "https://www.circuitlab.com",
+            desc: "Useful when you want a more formal schematic workflow than the quick sandbox style of Falstad."),
+        LinkEntry(title: "LTspice", url: "https://www.analog.com/en/design-center/design-tools-and-calculators/ltspice-simulator.html",
+            desc: "For students who want to move from conceptual checking into deeper circuit simulation and waveform analysis."),
+    ],
+    "cprog": [
+        LinkEntry(title: "cppreference", url: "https://en.cppreference.com/w/c",
+            desc: "The reference you want nearby whenever syntax, standard library behavior, or function details get fuzzy."),
+        LinkEntry(title: "Valgrind", url: "https://valgrind.org",
+            desc: "A go-to memory debugging companion for leaks, invalid accesses, and subtle pointer mistakes."),
+        LinkEntry(title: "GCC Documentation", url: "https://gcc.gnu.org/onlinedocs/",
+            desc: "Compiler flags, warnings, and details that matter once the course starts leaning harder on tooling."),
+        LinkEntry(title: "CS50 Notes and Lectures", url: "https://cs50.harvard.edu/x/",
+            desc: "Clear explanations of fundamentals, memory, and debugging with a beginner-friendly tone."),
+        LinkEntry(title: "Compiler Explorer", url: "https://godbolt.org",
+            desc: "Great for peeking under the hood when you want to see how C code turns into assembly."),
+        LinkEntry(title: "Learn-C.org", url: "https://learn-c.org",
+            desc: "Quick interactive refreshers when you want a low-friction practice pass on a concept."),
+    ],
+]
