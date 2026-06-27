@@ -5,7 +5,7 @@ import SwiftUI
 /// Phase 6 connects `AuthService.deleteAccount()` (delete progress rows → invoke
 /// the `delete-account` Edge Function → sign out).
 struct DeleteAccountScreen: View {
-    @Environment(SessionStore.self) private var session
+    @Environment(AuthService.self) private var auth
     @State private var showConfirmation = false
     @State private var isDeleting = false
     @State private var errorMessage: String?
@@ -83,10 +83,11 @@ struct DeleteAccountScreen: View {
     private func performDeletion() async {
         isDeleting = true
         defer { isDeleting = false }
-        // Phase 6: try await auth.deleteAccount()
-        // (delete progress rows → invoke `delete-account` Edge Function → sign out)
-        try? await Task.sleep(for: .seconds(1))
-        session.signOut()
+        do {
+            try await auth.deleteAccount()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
@@ -105,5 +106,5 @@ struct BulletLabelStyle: LabelStyle {
 
 #Preview {
     NavigationStack { DeleteAccountScreen() }
-        .environment(SessionStore())
+        .environment(AuthService())
 }

@@ -4,12 +4,10 @@ import SwiftUI
 /// pushes are driven by the typed `Route` enum; the Sign-In screen is presented
 /// as a full-screen cover.
 struct RootView: View {
-    @Environment(SessionStore.self) private var session
+    @Environment(AuthService.self) private var auth
     @State private var selectedTab: AppTab = .academy
 
     var body: some View {
-        @Bindable var session = session
-
         TabView(selection: $selectedTab) {
             tab(.academy) {
                 HomeScreen(selectTab: { selectedTab = $0 })
@@ -27,7 +25,13 @@ struct RootView: View {
                 SettingsScreen()
             }
         }
-        .fullScreenCover(isPresented: $session.presentingSignIn) {
+        // Auth gate: present sign-in once the session has resolved and the user
+        // is neither signed in nor exploring as a guest. Dismisses automatically
+        // when they sign in or choose to explore.
+        .fullScreenCover(isPresented: Binding(
+            get: { auth.didResolve && auth.needsSignIn },
+            set: { _ in }
+        )) {
             SignInScreen()
         }
     }
@@ -60,5 +64,6 @@ struct RootView: View {
     RootView()
         .environment(ThemeService())
         .environment(NotificationService())
-        .environment(SessionStore())
+        .environment(AuthService())
+        .environment(ProgressService())
 }

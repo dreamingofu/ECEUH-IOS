@@ -52,6 +52,10 @@ Supabase URL + anon key. Wired into the build in Phase 6.
 
 ## Status
 
-Phases 1–5 complete (scaffold, data, components, all screens + navigation,
-device services + PDF preview). Phase 6 (Supabase auth + sync) and Phase 7
-(polish) pending — see [the plan](../../.claude/plans/gleaming-puzzling-dolphin.md).
+All phases implemented: scaffold, data, components, all 13 screens + navigation,
+device services + PDF preview, polish (app icon, animated faculty spotlight,
+accessibility), and **Supabase** (email/Apple/Google auth, auth gate, progress
+sync, in-app delete). Connectivity to the live project is verified.
+
+A few **manual Supabase/Apple steps** remain before Apple/Google sign-in fully
+work and account-deletion is live — see [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).

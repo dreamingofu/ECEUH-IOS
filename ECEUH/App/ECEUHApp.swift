@@ -4,20 +4,23 @@ import SwiftUI
 struct ECEUHApp: App {
     @State private var theme = ThemeService()
     @State private var notifications = NotificationService()
-    @State private var session = SessionStore()
+    @State private var auth = AuthService()
+    @State private var progress = ProgressService()
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(theme)
                 .environment(notifications)
-                .environment(session)
+                .environment(auth)
+                .environment(progress)
                 .preferredColorScheme(theme.colorScheme)
-                .task {
-                    // Per Apple's HIG, notification permission is requested in
-                    // context (when the user enables a toggle in Settings), not
-                    // on cold launch. Here we only sync the current status.
-                    await notifications.refreshStatus()
+                .task { await auth.start() }
+                .task(id: auth.userId) {
+                    // Pull cloud progress when a user signs in.
+                    if let userId = auth.userId {
+                        await progress.pull(userId: userId)
+                    }
                 }
         }
     }

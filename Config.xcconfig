@@ -1,0 +1,5 @@
+// Base build config (committed). Real Supabase values live in the gitignored
+// Secrets.xcconfig, included optionally below — so a fresh clone / CI builds
+// fine without it (Supabase just stays unconfigured until a Secrets.xcconfig
+// is added). See docs/SUPABASE_SETUP.md.
+#include? "Secrets.xcconfig"

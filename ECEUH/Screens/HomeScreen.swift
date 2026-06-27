@@ -219,5 +219,4 @@ private struct FacultyCTACard: View {
 
 #Preview {
     NavigationStack { HomeScreen() }
-        .environment(SessionStore())
 }
