@@ -14,6 +14,27 @@ enum RatingTier {
         }
     }
 
+    /// Difficulty tier — *inverted*: an easier course is "good" (green), a very
+    /// hard one is "bad" (red). Out of 5.
+    static func difficulty(_ value: Double?) -> RatingTier {
+        guard let value else { return .unrated }
+        switch value {
+        case ..<3.0:    return .good   // manageable
+        case 3.0..<4.0: return .medium // moderately hard
+        default:        return .bad    // very hard
+        }
+    }
+
+    /// Would-take-again tier — higher is better. Percentage 0–100.
+    static func wouldTake(_ value: Int?) -> RatingTier {
+        guard let value else { return .unrated }
+        switch value {
+        case 70...:    return .good
+        case 40..<70:  return .medium
+        default:       return .bad
+        }
+    }
+
     /// Solid tier color (score, rating-bar fills, tab dots).
     var color: Color {
         switch self {

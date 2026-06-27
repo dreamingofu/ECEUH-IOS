@@ -96,7 +96,8 @@ private struct ProfDetailCard: View {
         EECard(padding: 16) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 12) {
-                    Avatar(initials: prof.initials, size: 52, gradient: tier.gradient)
+                    Avatar(initials: prof.initials, size: 52,
+                           gradient: AvatarPalette.gradient(for: prof.name))
                     VStack(alignment: .leading, spacing: 1) {
                         Text(prof.name).font(.headline).foregroundStyle(EE.text)
                         Text(prof.dept).font(.footnote).foregroundStyle(EE.textDim)
@@ -115,11 +116,14 @@ private struct ProfDetailCard: View {
                 if prof.hasRating {
                     VStack(spacing: 11) {
                         RatingBar(label: "Overall", fraction: (prof.overall ?? 0) / 5,
-                                  valueText: String(format: "%.1f", prof.overall ?? 0), tint: tier.color)
+                                  valueText: String(format: "%.1f", prof.overall ?? 0),
+                                  tint: RatingTier(overall: prof.overall).color)
                         RatingBar(label: "Difficulty", fraction: (prof.difficulty ?? 0) / 5,
-                                  valueText: prof.difficulty.map { String(format: "%.1f", $0) } ?? "—", tint: tier.color)
+                                  valueText: prof.difficulty.map { String(format: "%.1f", $0) } ?? "—",
+                                  tint: RatingTier.difficulty(prof.difficulty).color)
                         RatingBar(label: "Would take again", fraction: Double(prof.wouldTake ?? 0) / 100,
-                                  valueText: prof.wouldTake.map { "\($0)%" } ?? "—", tint: tier.color)
+                                  valueText: prof.wouldTake.map { "\($0)%" } ?? "—",
+                                  tint: RatingTier.wouldTake(prof.wouldTake).color)
                     }
                     if let rmp = prof.rmpUrl {
                         EEButton(title: "View on RateMyProfessors", icon: "arrow.up.right",
