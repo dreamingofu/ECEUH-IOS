@@ -1,0 +1,16 @@
+# Xcode / build
+build/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+*.moved-aside
+.DS_Store
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+
+# Secrets — never commit real Supabase keys
+Secrets.xcconfig
