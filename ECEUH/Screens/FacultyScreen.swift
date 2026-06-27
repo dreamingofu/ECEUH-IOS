@@ -132,7 +132,7 @@ private struct ProfDetailCard: View {
                         }
                     }
                 } else {
-                    Text("Unrated — no RateMyProfessors data yet.")
+                    Text("New to this course — no ratings yet.")
                         .font(.footnote).italic().foregroundStyle(EE.textDim)
                 }
             }
