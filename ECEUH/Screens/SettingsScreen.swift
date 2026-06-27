@@ -5,57 +5,61 @@ struct SettingsScreen: View {
     @Environment(NotificationService.self) private var notifications
     @Environment(AuthService.self) private var auth
 
+    @State private var presentingSignIn = false
+    @AppStorage("settings.icloudSync") private var icloudSync = false
+
+    private var darkBinding: Binding<Bool> {
+        Binding(get: { theme.theme != .light },
+                set: { theme.setTheme($0 ? .dark : .light) })
+    }
+
+    private var savedCount: Int {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return (try? FileManager.default.contentsOfDirectory(atPath: docs.path))?.count ?? 0
+    }
+
     var body: some View {
-        @Bindable var theme = theme
-        @Bindable var auth = auth
-
         Form {
-            if auth.isSignedIn {
-                profileHeader(auth: auth)
-                Section("Profile Details") {
-                    LabeledField("Full Name", text: $auth.displayName)
-                    LabeledField("Cougarnet Email", text: $auth.email, keyboard: .emailAddress)
-                    LabeledField("Major / Track", text: $auth.major)
-                    Picker("Expected Graduation", selection: $auth.gradYear) {
-                        ForEach(["2026", "2027", "2028", "2029"], id: \.self) { Text($0).tag($0) }
-                    }
-                }
-            } else {
-                guestHeader
-            }
-
-            Section("Notifications") {
-                NotifToggle(title: "New File Uploads",
-                            subtitle: "Get notified when new lecture files, worksheets, or exams are added to your courses.",
-                            isOn: notifications.newFilesEnabled) { v in Task { await notifications.setNewFiles(v) } }
-                NotifToggle(title: "Faculty Rating Updates",
-                            subtitle: "Updates when new ratings and reviews are posted.",
-                            isOn: notifications.newRatingsEnabled) { v in Task { await notifications.setNewRatings(v) } }
-                NotifToggle(title: "Security Alerts",
-                            subtitle: "Notifications for sign-ins from a new device or browser.",
-                            isOn: notifications.securityAlertsEnabled) { v in Task { await notifications.setSecurityAlerts(v) } }
-                if notifications.status == .denied {
-                    Button {
-                        notifications.openSystemSettings()
-                    } label: {
-                        Label("Notifications are off in iOS Settings — tap to enable", systemImage: "bell.slash")
-                            .font(.footnote)
-                    }
-                }
-            }
+            accountSection
 
             Section("Appearance") {
-                Picker("Theme", selection: $theme.theme) {
-                    ForEach(AppTheme.allCases) { Text($0.label).tag($0) }
+                SRow(icon: "moon.fill", iconColor: Color(hex: 0x5856D6), title: "Dark mode") {
+                    Toggle("", isOn: darkBinding).labelsHidden().tint(EE.accent)
                 }
-                .pickerStyle(.segmented)
+                SRow(icon: "bolt.fill", iconColor: EE.accent, title: "App icon", value: "Scarlet")
             }
 
             Section {
-                NavigationLink(value: Route.privacy) { Label("Privacy Policy", systemImage: "lock.shield") }
-                if auth.isSignedIn {
-                    NavigationLink(value: Route.deleteAccount) { Label("Delete Account", systemImage: "trash") }
+                SRow(icon: "bell.fill", iconColor: EE.exam, title: "New files") {
+                    Toggle("", isOn: Binding(get: { notifications.newFilesEnabled },
+                                             set: { v in Task { await notifications.setNewFiles(v) } }))
+                        .labelsHidden().tint(EE.accent)
                 }
+                SRow(icon: "clock.fill", iconColor: EE.classwork, title: "iCloud sync") {
+                    Toggle("", isOn: $icloudSync).labelsHidden().tint(EE.accent)
+                }
+            } header: { Text("Notifications") }
+            footer: { Text("Get notified when new quiz solutions and exam reviews are posted.") }
+
+            Section("Library") {
+                NavigationLink(value: Route.clubs) {
+                    SRow(icon: "person.3.fill", iconColor: EE.lab, title: "Clubs", value: "\(kClubs.count)")
+                }
+                SRow(icon: "arrow.down.circle.fill", iconColor: EE.homework, title: "Saved files", value: "\(savedCount)")
+            }
+
+            Section {
+                NavigationLink(value: Route.privacy) {
+                    SRow(icon: "lock.shield.fill", iconColor: EE.good, title: "Privacy")
+                }
+                if auth.isSignedIn {
+                    NavigationLink(value: Route.deleteAccount) {
+                        SRow(icon: "trash.fill", iconColor: EE.accent, title: "Delete account")
+                    }
+                }
+                SRow(icon: "info.circle.fill", iconColor: EE.reference, title: "Version", value: "2.0")
+            } footer: {
+                Text("ECEUH — built for the UH EE Discord community.")
             }
 
             if auth.isSignedIn {
@@ -63,120 +67,73 @@ struct SettingsScreen: View {
                     Button(role: .destructive) {
                         Task { await auth.signOut() }
                     } label: {
-                        Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                        Text("Sign Out").frame(maxWidth: .infinity)
                     }
                 }
             }
         }
-        .navigationTitle("Account")
+        .scrollContentBackground(.hidden)
+        .background(EE.bg.ignoresSafeArea())
+        .navigationTitle("Settings")
+        .tint(EE.accent)
+        .sheet(isPresented: $presentingSignIn) { SignInScreen() }
         .task { await notifications.refreshStatus() }
     }
 
-    private func profileHeader(auth: AuthService) -> some View {
+    @ViewBuilder private var accountSection: some View {
         Section {
-            VStack(spacing: 12) {
-                Image(systemName: "bolt.fill")
-                    .resizable().scaledToFit()
-                    .frame(width: 40, height: 40)
-                    .foregroundStyle(Color.accentColor)
-                    .frame(width: 96, height: 96)
-                    .background(Color(.secondarySystemGroupedBackground), in: Circle())
-                    .overlay(
-                        Circle().strokeBorder(
-                            LinearGradient(colors: [Brand.goldLight, Brand.goldDark], startPoint: .top, endPoint: .bottom),
-                            lineWidth: 3)
-                    )
-                Text(auth.displayName.isEmpty ? "ECE Student" : auth.displayName)
-                    .font(.title2.weight(.bold))
-                Text(auth.email).font(.subheadline).foregroundStyle(.secondary)
-                HStack(spacing: 8) {
-                    BadgeChip(text: "ECE Major", tint: .accentColor)
-                    BadgeChip(text: "Class of \(auth.gradYear)", tint: .blue)
+            if auth.isSignedIn {
+                SRow(title: auth.displayName.isEmpty ? "Your account" : auth.displayName,
+                     subtitle: auth.email) {
+                    Avatar(initials: initials(auth.displayName), size: 34)
                 }
-                ShareLink(item: URL(string: "https://github.com/dreamingofu/eceuh")!) {
-                    Label("Share App", systemImage: "square.and.arrow.up")
+            } else {
+                Button { presentingSignIn = true } label: {
+                    SRow(title: "Sign in with Apple", subtitle: "Sync progress across devices") {
+                        HStack(spacing: 6) {
+                            Avatar(initials: "EE", size: 34)
+                            Image(systemName: "chevron.right").font(.footnote).foregroundStyle(EE.textFaint)
+                        }
+                    }
                 }
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.capsule)
+                .buttonStyle(.plain)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .listRowBackground(Color.clear)
         }
     }
 
-    private var guestHeader: some View {
-        Section {
-            VStack(spacing: 12) {
-                Image(systemName: "person.crop.circle.badge.questionmark")
-                    .resizable().scaledToFit().frame(width: 56, height: 56)
-                    .foregroundStyle(.secondary)
-                Text("You're exploring as a guest").font(.headline)
-                Text("Sign in to sync your progress across web, Android, and iOS.")
-                    .font(.subheadline).foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                Button {
-                    auth.isGuest = false
-                } label: {
-                    Label("Sign In", systemImage: "person.fill").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.capsule)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .listRowBackground(Color.clear)
-        }
+    private func initials(_ name: String) -> String {
+        let parts = name.split(separator: " ")
+        let letters = parts.prefix(2).compactMap { $0.first }
+        return letters.isEmpty ? "EE" : String(letters).uppercased()
     }
 }
 
-private struct LabeledField: View {
+/// A settings row: optional colored icon tile, title, subtitle/value, trailing accessory.
+private struct SRow<Trailing: View>: View {
+    var icon: String? = nil
+    var iconColor: Color = EE.accent
     let title: String
-    @Binding var text: String
-    var keyboard: UIKeyboardType = .default
-
-    init(_ title: String, text: Binding<String>, keyboard: UIKeyboardType = .default) {
-        self.title = title
-        self._text = text
-        self.keyboard = keyboard
-    }
+    var subtitle: String? = nil
+    var value: String? = nil
+    @ViewBuilder var trailing: Trailing
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.caption).foregroundStyle(.secondary)
-            TextField(title, text: $text)
-                .keyboardType(keyboard)
-                .textInputAutocapitalization(keyboard == .emailAddress ? .never : .sentences)
-                .autocorrectionDisabled(keyboard == .emailAddress)
-        }
-    }
-}
-
-private struct NotifToggle: View {
-    let title: String
-    let subtitle: String
-    let isOn: Bool
-    let onChange: (Bool) -> Void
-
-    var body: some View {
-        Toggle(isOn: Binding(get: { isOn }, set: onChange)) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            if let icon { IconTile(systemName: icon, color: iconColor) }
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).foregroundStyle(EE.text)
+                if let subtitle { Text(subtitle).font(.footnote).foregroundStyle(EE.textMuted) }
             }
+            Spacer(minLength: 8)
+            if let value { Text(value).foregroundStyle(EE.textMuted) }
+            trailing
         }
     }
 }
 
-private struct BadgeChip: View {
-    let text: String
-    let tint: Color
-    var body: some View {
-        Text(text)
-            .font(.caption.weight(.bold))
-            .foregroundStyle(tint)
-            .padding(.horizontal, 12).padding(.vertical, 6)
-            .background(tint.opacity(0.12), in: Capsule())
+private extension SRow where Trailing == EmptyView {
+    init(icon: String? = nil, iconColor: Color = EE.accent, title: String, subtitle: String? = nil, value: String? = nil) {
+        self.init(icon: icon, iconColor: iconColor, title: title, subtitle: subtitle, value: value) { EmptyView() }
     }
 }
 
@@ -185,4 +142,5 @@ private struct BadgeChip: View {
         .environment(ThemeService())
         .environment(NotificationService())
         .environment(AuthService())
+        .preferredColorScheme(.dark)
 }

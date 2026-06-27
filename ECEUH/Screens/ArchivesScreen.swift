@@ -1,72 +1,53 @@
 import SwiftUI
 
 struct ArchivesScreen: View {
-    var body: some View {
-        List {
-            Section {
-                SectionHeader(
-                    kicker: "Course Archives",
-                    title: "Every course in the ECE base.",
-                    subtitle: "Live courses have full walkthroughs, files, and resources. The rest are on deck and get added one at a time."
-                )
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-            }
+    var selectTab: (AppTab) -> Void = { _ in }
 
-            Section("Live") {
-                ForEach(liveCourses) { course in
-                    NavigationLink(value: Route.courseHub(slug: course.slug)) {
-                        LiveCourseRow(course: course)
-                    }
-                }
-            }
+    @State private var filter = "All"
+    private let options = ["All", "2000s", "3000s"]
+    private let cols = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
-            Section("On Deck · \(upcomingCourses.count) courses") {
-                ForEach(upcomingCourses) { course in
-                    HStack(spacing: 12) {
-                        Text(course.code)
-                            .font(.caption.monospaced())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 72, alignment: .leading)
-                        Text(course.displayArchiveTitle)
-                            .font(.subheadline)
-                        Spacer()
-                        Text("Coming soon")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(Color(.tertiarySystemFill), in: Capsule())
-                    }
-                }
-            }
+    private var shown: [Course] {
+        switch filter {
+        case "2000s": kCourses.filter { $0.level == 2000 }
+        case "3000s": kCourses.filter { $0.level == 3000 }
+        default:      kCourses
         }
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                EESegmentedControl(options: options, selection: $filter)
+                LazyVGrid(columns: cols, spacing: 12) {
+                    ForEach(shown) { course in
+                        NavigationLink(value: Route.courseDetail(slug: course.slug)) {
+                            CourseCard(code: course.code, name: course.displayArchiveTitle,
+                                       artAsset: artAsset(for: course.slug),
+                                       units: "\(course.units) Units", badge: courseBadge(for: course.slug))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    Button { selectTab(.faculty) } label: {
+                        CourseCard(code: "RMP", name: "Professor Ratings", artAsset: "art-rmp",
+                                   units: "Faculty", badge: "Reference")
+                    }
+                    .buttonStyle(.plain)
+                }
+                Text("Quiz walkthroughs, exams, homework & formula sheets.")
+                    .font(.caption).foregroundStyle(EE.textDim)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 4)
+            }
+            .padding(.horizontal, Spacing.gutter)
+            .padding(.vertical, 4)
+            .padding(.bottom, 24)
+        }
+        .background(EE.bg.ignoresSafeArea())
         .navigationTitle("Archives")
     }
 }
 
-struct LiveCourseRow: View {
-    let course: Course
-
-    var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "book.fill")
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 44, height: 44)
-                .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            VStack(alignment: .leading, spacing: 3) {
-                Text(course.code)
-                    .font(.caption2.weight(.bold))
-                    .textCase(.uppercase)
-                    .foregroundStyle(Color.accentColor)
-                Text(course.displayArchiveTitle).font(.headline)
-                Text("\(course.units) units · Live")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-}
-
 #Preview {
-    NavigationStack { ArchivesScreen() }
+    NavigationStack { ArchivesScreen() }.preferredColorScheme(.dark)
 }

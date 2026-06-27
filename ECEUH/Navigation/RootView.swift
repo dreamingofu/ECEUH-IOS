@@ -1,43 +1,28 @@
 import SwiftUI
 
-/// The app shell: a native `TabView` with one `NavigationStack` per tab. Nested
-/// pushes are driven by the typed `Route` enum; the Sign-In screen is presented
-/// as a full-screen cover.
+/// App shell — four native tabs themed to the scarlet-on-black design. Sign-in
+/// is optional (offered from Settings), so there's no forced launch gate.
 struct RootView: View {
-    @Environment(AuthService.self) private var auth
-    @State private var selectedTab: AppTab = .academy
+    @State private var selectedTab: AppTab = .home
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            tab(.academy) {
+            tab(.home) {
                 HomeScreen(selectTab: { selectedTab = $0 })
             }
-            tab(.research) {
+            tab(.archives) {
                 ArchivesScreen()
             }
-            tab(.clubs) {
-                ClubsScreen()
-            }
-            tab(.ratings) {
+            tab(.faculty) {
                 FacultyScreen()
             }
-            tab(.account) {
+            tab(.settings) {
                 SettingsScreen()
             }
         }
-        // Auth gate: present sign-in once the session has resolved and the user
-        // is neither signed in nor exploring as a guest. Dismisses automatically
-        // when they sign in or choose to explore.
-        .fullScreenCover(isPresented: Binding(
-            get: { auth.didResolve && auth.needsSignIn },
-            set: { _ in }
-        )) {
-            SignInScreen()
-        }
+        .tint(EE.accent)
     }
 
-    /// A tab whose root is wrapped in a `NavigationStack` with the shared
-    /// route destinations attached.
     private func tab<Root: View>(_ tab: AppTab, @ViewBuilder root: () -> Root) -> some View {
         NavigationStack {
             root()
@@ -50,12 +35,11 @@ struct RootView: View {
     @ViewBuilder
     private func routeDestination(_ route: Route) -> some View {
         switch route {
-        case .courseHub(let slug):     CourseHubScreen(slug: slug)
-        case .fileLibrary(let slug):   FileLibraryScreen(slug: slug)
-        case .externalLinks(let slug): ExternalLinksScreen(slug: slug)
-        case .clubDetail(let slug):    ClubDetailScreen(slug: slug)
-        case .privacy:                 PrivacyScreen()
-        case .deleteAccount:           DeleteAccountScreen()
+        case .courseDetail(let slug): CourseDetailScreen(slug: slug)
+        case .clubs:                  ClubsScreen()
+        case .clubDetail(let slug):   ClubDetailScreen(slug: slug)
+        case .privacy:                PrivacyScreen()
+        case .deleteAccount:          DeleteAccountScreen()
         }
     }
 }

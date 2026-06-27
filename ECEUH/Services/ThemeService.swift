@@ -35,7 +35,8 @@ final class ThemeService {
         switch defaults.string(forKey: ThemeService.key) {
         case "dark":  theme = .dark
         case "light": theme = .light
-        default:      theme = .system
+        case "system": theme = .system
+        default:      theme = .dark // signature OLED-black look is the default
         }
     }
 

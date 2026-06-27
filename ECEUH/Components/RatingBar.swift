@@ -1,31 +1,29 @@
 import SwiftUI
 
-/// A labeled horizontal meter used for faculty ratings (overall / difficulty /
-/// would-take-again).
+/// A labeled red meter (`ee-rb`) — faculty Overall / Difficulty / Would-take-again.
 struct RatingBar: View {
     let label: String
-    /// Fill fraction, 0…1.
-    let fraction: Double
+    let fraction: Double // 0…1
     let valueText: String
-    var tint: Color = .accentColor
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
                 Text(label)
                     .font(.caption.weight(.semibold))
                     .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
+                    .kerning(0.5)
+                    .foregroundStyle(EE.textMuted)
                 Spacer()
                 Text(valueText)
-                    .font(.caption.weight(.semibold))
+                    .font(.eeMono(.footnote))
+                    .foregroundStyle(EE.text)
                     .monospacedDigit()
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color(.systemFill))
-                    Capsule()
-                        .fill(tint)
+                    Capsule().fill(EE.bgRaised)
+                    Capsule().fill(EE.accent)
                         .frame(width: max(0, min(1, fraction)) * geo.size.width)
                 }
             }
