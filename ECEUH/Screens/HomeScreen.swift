@@ -124,9 +124,10 @@ struct HomeScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader("Faculty Ledger") { selectTab(.faculty) }
             if let spot = spotlight {
+                let tier = RatingTier(overall: spot.prof.overall)
                 EECard(glow: true) {
                     HStack(spacing: 14) {
-                        Avatar(initials: spot.prof.initials, size: 64)
+                        Avatar(initials: spot.prof.initials, size: 64, gradient: tier.gradient)
                         VStack(alignment: .leading, spacing: 4) {
                             Text(spot.course)
                                 .font(.eeMono(.caption2)).textCase(.uppercase).kerning(1.2)
@@ -135,7 +136,7 @@ struct HomeScreen: View {
                             HStack(spacing: 10) {
                                 Stars(value: spot.prof.overall ?? 0)
                                 (Text(String(format: "%.1f", spot.prof.overall ?? 0))
-                                    .font(.title3.weight(.bold)).foregroundStyle(EE.accent)
+                                    .font(.title3.weight(.bold)).foregroundStyle(tier.color)
                                  + Text(" / 5.0").font(.caption2).foregroundStyle(EE.textDim))
                             }
                         }

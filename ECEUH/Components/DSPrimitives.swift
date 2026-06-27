@@ -1,17 +1,19 @@
 import SwiftUI
 
-/// Brand-gradient avatar with initials (`ee-avatar`). One hue only — red — per
-/// the design's "never another hue" rule.
+/// Gradient avatar with initials (`ee-avatar`). Defaults to the brand red
+/// gradient; faculty pass a `RatingTier` gradient so the initials card is
+/// color-coded by the professor's rating.
 struct Avatar: View {
     let initials: String
     var size: CGFloat = 48
+    var gradient: LinearGradient = EE.brandGrad
 
     var body: some View {
         Text(initials)
             .font(.system(size: size * 0.38, weight: .bold))
             .foregroundStyle(.white)
             .frame(width: size, height: size)
-            .background(EE.brandGrad)
+            .background(gradient)
             .clipShape(Circle())
             .accessibilityHidden(true)
     }
