@@ -1,12 +1,12 @@
 import SwiftUI
 
 /// A course's File Library: color-coded file-type filter chips + the filtered
-/// file rows, each with Preview / Save / Share actions.
+/// file rows. Tapping a row previews it (or expands a multi-version file);
+/// long-press offers Preview / Save / Share.
 struct FileLibraryScreen: View {
     let slug: String
 
     @State private var typeFilter: FileType?
-    @State private var actionFile: FileEntry?
     @State private var preview: PreviewTarget?
     @State private var shareItem: ShareableURL?
     @State private var saving = false
@@ -38,9 +38,13 @@ struct FileLibraryScreen: View {
                 } else {
                     ForEach(shown) { file in
                         FileRow(file: file,
-                                onOpen: { actionFile = file },
-                                onPreviewVersion: { v in
-                                    preview = PreviewTarget(url: v.url, title: "\(file.title) — \(v.label)")
+                                onPreview: { v in
+                                    let title = file.versionCount > 1 ? "\(file.title) — \(v.label)" : file.title
+                                    preview = PreviewTarget(url: v.url, title: title)
+                                },
+                                onSave: { v in Task { await save(v) } },
+                                onShare: { v in
+                                    if let u = URL(string: v.url) { shareItem = ShareableURL(url: u) }
                                 })
                     }
                 }
@@ -52,7 +56,6 @@ struct FileLibraryScreen: View {
         .background(EE.bg.ignoresSafeArea())
         .navigationTitle("File Library")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $actionFile) { actionSheet(for: $0).presentationDetents([.height(360), .medium]) }
         .sheet(item: $preview) { PreviewScreen(target: $0) }
         .sheet(item: $shareItem) { ShareSheet(items: [$0.url]) }
         .overlay { if saving { savingOverlay } }
@@ -90,65 +93,6 @@ struct FileLibraryScreen: View {
              : "No \(typeFilter?.label.lowercased() ?? "") files in this library.")
             .font(.footnote).italic().foregroundStyle(EE.textDim)
             .padding(.vertical, 8)
-    }
-
-    // MARK: Action sheet
-
-    private func actionSheet(for file: FileEntry) -> some View {
-        let target = PreviewTarget(url: file.primary.url, title: file.title)
-        return VStack(spacing: 14) {
-            Capsule().fill(EE.bgRaised).frame(width: 36, height: 5).padding(.top, 8)
-            HStack {
-                Text(file.title).font(.title3.weight(.bold)).foregroundStyle(EE.text)
-                Spacer()
-            }
-            HStack(spacing: 8) {
-                Badge(type: file.type, label: file.label)
-                Text("\(file.primary.label) · .\(file.primary.ext.lowercased())")
-                    .font(.eeMono(.caption)).foregroundStyle(EE.textDim)
-                Spacer()
-            }
-            VStack(spacing: 0) {
-                actionRow("eye", EE.classwork, "Preview") { closeThen { preview = target } }
-                Divider().overlay(EE.separator).padding(.leading, 58)
-                actionRow("arrow.down.to.line", EE.homework, "Save to library") {
-                    actionFile = nil; Task { await save(file.primary) }
-                }
-                Divider().overlay(EE.separator).padding(.leading, 58)
-                actionRow("square.and.arrow.up", EE.lab, "Share…") {
-                    closeThen { if let u = URL(string: file.primary.url) { shareItem = ShareableURL(url: u) } }
-                }
-            }
-            .background(EE.bgCard, in: RoundedRectangle(cornerRadius: Radii.lg, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: Radii.lg, style: .continuous).strokeBorder(EE.border))
-            EEButton(title: "Open PDF", icon: "arrow.down.to.line", block: true) {
-                closeThen { preview = target }
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
-        .frame(maxWidth: .infinity)
-        .background(EE.bgElevated.ignoresSafeArea())
-    }
-
-    private func actionRow(_ icon: String, _ color: Color, _ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                IconTile(systemName: icon, color: color)
-                Text(title).font(.body).foregroundStyle(EE.text)
-                Spacer()
-                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(EE.textFaint)
-            }
-            .padding(.vertical, 11).padding(.horizontal, 16)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func closeThen(_ action: @escaping () -> Void) {
-        actionFile = nil
-        Task { try? await Task.sleep(for: .seconds(0.25)); action() }
     }
 
     private func save(_ version: FileVersion) async {
