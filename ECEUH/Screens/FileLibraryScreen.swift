@@ -37,7 +37,11 @@ struct FileLibraryScreen: View {
                     emptyState
                 } else {
                     ForEach(shown) { file in
-                        FileRow(file: file) { actionFile = file }
+                        FileRow(file: file,
+                                onOpen: { actionFile = file },
+                                onPreviewVersion: { v in
+                                    preview = PreviewTarget(url: v.url, title: "\(file.title) — \(v.label)")
+                                })
                     }
                 }
             }
