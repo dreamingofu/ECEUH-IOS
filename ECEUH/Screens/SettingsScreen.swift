@@ -7,6 +7,7 @@ struct SettingsScreen: View {
 
     @State private var presentingSignIn = false
     @AppStorage("settings.icloudSync") private var icloudSync = false
+    @AppStorage("settings.appIcon") private var appIconID = ""
 
     private var darkBinding: Binding<Bool> {
         Binding(get: { theme.theme != .light },
@@ -26,14 +27,16 @@ struct SettingsScreen: View {
                 SRow(icon: "moon.fill", iconColor: Color(hex: 0x5856D6), title: "Dark mode") {
                     Toggle("", isOn: darkBinding).labelsHidden().tint(EE.accent)
                 }
-                HStack(spacing: 12) {
-                    Image("AppLogo")
-                        .resizable().scaledToFill()
-                        .frame(width: 30, height: 30)
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    Text("App icon").foregroundStyle(EE.text)
-                    Spacer()
-                    Text("Ember").foregroundStyle(EE.textMuted)
+                NavigationLink(value: Route.appIcon) {
+                    HStack(spacing: 12) {
+                        Image(appIconOption(for: appIconID).preview)
+                            .resizable().scaledToFill()
+                            .frame(width: 30, height: 30)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        Text("App icon").foregroundStyle(EE.text)
+                        Spacer()
+                        Text(appIconOption(for: appIconID).title).foregroundStyle(EE.textMuted)
+                    }
                 }
             }
 
