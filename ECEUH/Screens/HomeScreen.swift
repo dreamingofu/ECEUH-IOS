@@ -27,7 +27,7 @@ private func readiness(_ course: Course) -> Double {
 struct HomeScreen: View {
     var selectTab: (AppTab) -> Void = { _ in }
 
-    private var cont: Course { liveCourses.first ?? kCourses[0] }
+    private var cont: Course { coursesWithContent.first ?? liveCourses.first ?? kCourses[0] }
     private var spotlight: (prof: Professor, course: String)? {
         for c in kProfessorCourses {
             if let p = c.profs.first(where: { $0.hasRating }) { return (p, c.code) }
@@ -101,7 +101,7 @@ struct HomeScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader("Course Archives") { selectTab(.archives) }
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-                ForEach(Array(liveCourses.prefix(3))) { course in
+                ForEach(Array(coursesWithContent.prefix(3))) { course in
                     NavigationLink(value: Route.courseDetail(slug: course.slug)) {
                         CourseCard(code: course.code, name: course.displayArchiveTitle,
                                    artAsset: artAsset(for: course.slug),

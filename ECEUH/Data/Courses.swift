@@ -110,3 +110,13 @@ func courseBySlug(_ slug: String) -> Course? {
 
 var liveCourses: [Course] { kCourses.filter { $0.isLive } }
 var upcomingCourses: [Course] { kCourses.filter { !$0.isLive } }
+
+/// True once a course has actual class data — files (homework / quizzes / exams).
+func courseHasContent(_ course: Course) -> Bool {
+    !(kCourseFiles[course.slug] ?? []).isEmpty
+}
+
+/// Courses with class data — the ones surfaced on Home and Archives. Empty
+/// courses stay in `kCourses` (in code) and appear here automatically once files
+/// are added under their slug, so classes can be rolled out as content lands.
+var coursesWithContent: [Course] { kCourses.filter(courseHasContent) }

@@ -8,10 +8,12 @@ struct ArchivesScreen: View {
     private let cols = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
     private var shown: [Course] {
+        // Only classes that have content (files); empties stay in code, hidden.
+        let base = coursesWithContent
         switch filter {
-        case "2000s": kCourses.filter { $0.level == 2000 }
-        case "3000s": kCourses.filter { $0.level == 3000 }
-        default:      kCourses
+        case "2000s": return base.filter { $0.level == 2000 }
+        case "3000s": return base.filter { $0.level == 3000 }
+        default:      return base
         }
     }
 
