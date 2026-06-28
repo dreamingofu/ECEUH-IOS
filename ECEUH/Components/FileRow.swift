@@ -69,7 +69,8 @@ struct FileRow: View {
                                    : "Opens preview")
     }
 
-    /// Trailing meta: a "N versions" disclosure (multi) or "label · .ext ›" (single).
+    /// Trailing meta: a "N versions" disclosure (multi) or "label ›" (single).
+    /// Drops the file extension when the label already conveys it (e.g. "PDF").
     @ViewBuilder private var meta: some View {
         if isMulti {
             HStack(spacing: 5) {
@@ -83,12 +84,20 @@ struct FileRow: View {
             .background(typeColor.opacity(0.14), in: Capsule())
         } else {
             HStack(spacing: 6) {
-                Text("\(file.primary.label) · .\(file.primary.ext.lowercased())")
+                Text(singleMetaText)
                     .font(.eeMono(.caption)).foregroundStyle(EE.textDim)
                 Image(systemName: "chevron.right")
                     .font(.caption2.weight(.bold)).foregroundStyle(EE.textFaint)
             }
         }
+    }
+
+    /// The single-version label, with the extension appended only when it adds
+    /// information (i.e. the label isn't already the format, like "PDF · .pdf").
+    private var singleMetaText: String {
+        let label = file.primary.label
+        let ext = file.primary.ext.lowercased()
+        return label.lowercased() == ext ? label : "\(label) · .\(ext)"
     }
 
     // MARK: Version list (multi, expanded)
