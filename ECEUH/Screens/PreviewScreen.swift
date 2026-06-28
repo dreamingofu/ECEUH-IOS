@@ -1,4 +1,5 @@
 import SwiftUI
+import PDFKit
 
 /// A file the preview sheet can open.
 struct PreviewTarget: Identifiable, Hashable {
@@ -7,16 +8,17 @@ struct PreviewTarget: Identifiable, Hashable {
     var id: String { url }
 }
 
-/// In-app file preview. PDFs route through the Google Docs Viewer proxy (mobile
-/// WebKit can't render PDFs in an iframe directly); other URLs load directly.
-/// On a WebView load failure (e.g. gview rate-limiting on campus networks) it
-/// falls back to QuickLook over a downloaded copy. Toolbar offers open-in-Safari,
-/// share, and save-to-Files.
+/// In-app file preview. PDFs render natively with **PDFKit** (`PDFView`) — fast,
+/// GPU-accelerated, with pinch-zoom and continuous scroll. If a PDF can't be
+/// parsed it falls back to QuickLook over a downloaded copy; non-PDF URLs load in
+/// a web view. Toolbar offers open-in-Safari, share, and save-to-Files.
 struct PreviewScreen: View {
     let target: PreviewTarget
     @Environment(\.dismiss) private var dismiss
 
-    @State private var useFallback = false
+    private enum Stage { case loading, pdf, quicklook, web, failed }
+    @State private var stage: Stage = .loading
+    @State private var document: PDFDocument?
     @State private var localURL: URL?
     @State private var saving = false
     @State private var shareItem: ShareableURL?
@@ -25,15 +27,7 @@ struct PreviewScreen: View {
     private var remoteURL: URL {
         URL(string: target.url) ?? URL(string: "https://eceuh.com")!
     }
-
-    private var sourceURL: URL {
-        if target.url.lowercased().hasSuffix(".pdf"),
-           let encoded = target.url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-           let proxied = URL(string: "https://docs.google.com/gview?embedded=true&url=\(encoded)") {
-            return proxied
-        }
-        return remoteURL
-    }
+    private var isPDF: Bool { target.url.lowercased().hasSuffix(".pdf") }
 
     var body: some View {
         NavigationStack {
@@ -45,17 +39,45 @@ struct PreviewScreen: View {
                 .overlay { if saving { savingOverlay } }
                 .overlay(alignment: .bottom) { toastView }
                 .sheet(item: $shareItem) { ShareSheet(items: [$0.url]) }
+                .task { await load() }
         }
     }
 
     @ViewBuilder
     private var content: some View {
-        if useFallback, let localURL {
-            QuickLookPreview(url: localURL)
-        } else {
-            WebView(url: sourceURL) {
-                Task { await prepareFallback() }
+        switch stage {
+        case .loading:
+            loadingView
+        case .pdf:
+            if let document { PDFKitView(document: document) } else { failedView }
+        case .quicklook:
+            if let localURL { QuickLookPreview(url: localURL) } else { failedView }
+        case .web:
+            WebView(url: remoteURL)
+        case .failed:
+            failedView
+        }
+    }
+
+    private var loadingView: some View {
+        ZStack {
+            EE.bg.ignoresSafeArea()
+            ProgressView("Loading…").tint(EE.accent).foregroundStyle(EE.textMuted)
+        }
+    }
+
+    private var failedView: some View {
+        ZStack {
+            EE.bg.ignoresSafeArea()
+            VStack(spacing: 14) {
+                Image(systemName: "doc.questionmark")
+                    .font(.largeTitle).foregroundStyle(EE.textDim)
+                Text("Couldn't open this file").font(.headline).foregroundStyle(EE.text)
+                EEButton(title: "Open in browser", icon: "safari", variant: .tinted) {
+                    ShareService.openExternal(target.url)
+                }
             }
+            .padding()
         }
     }
 
@@ -93,18 +115,32 @@ struct PreviewScreen: View {
         }
     }
 
-    private func prepareFallback() async {
-        if localURL == nil {
-            localURL = await ShareService.download(target.url)
+    // MARK: Loading
+
+    /// Render PDFs natively with PDFKit; fall back to a downloaded copy in
+    /// QuickLook, then to a web view / error. Non-PDF URLs load in the web view.
+    private func load() async {
+        guard stage == .loading else { return }
+        guard isPDF else { stage = .web; return }
+
+        if let (data, _) = try? await URLSession.shared.data(from: remoteURL),
+           let doc = PDFDocument(data: data) {
+            document = doc
+            stage = .pdf
+            return
         }
-        if localURL != nil { useFallback = true }
+        if let local = await ShareService.download(target.url) {
+            localURL = local
+            stage = .quicklook
+            return
+        }
+        stage = .failed
     }
 
     private func save() async {
         saving = true
         defer { saving = false }
-        if let saved = await ShareService.download(target.url) {
-            localURL = saved
+        if await ShareService.download(target.url) != nil {
             showToast("Saved to Files")
         } else {
             showToast("Couldn't save")
