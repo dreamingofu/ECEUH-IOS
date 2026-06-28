@@ -33,10 +33,12 @@ struct SignInScreen: View {
 
     private var brand: some View {
         VStack(spacing: 8) {
-            Image(systemName: "bolt.circle.fill")
+            Image("AppLogo")
                 .resizable().scaledToFit()
-                .frame(width: 72, height: 72)
-                .foregroundStyle(Color.accentColor)
+                .frame(width: 84, height: 84)
+                .clipShape(RoundedRectangle(cornerRadius: 19, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 19, style: .continuous).strokeBorder(EE.border))
+                .eeGlowSoft()
             Text("ECEUH").font(.largeTitle.weight(.bold)).foregroundStyle(Color.accentColor)
             Text("ECE Coursework Archive")
                 .font(.caption.weight(.semibold)).textCase(.uppercase).kerning(0.7)
