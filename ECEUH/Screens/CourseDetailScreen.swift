@@ -28,7 +28,8 @@ struct CourseDetailScreen: View {
                             subtitle: course?.sections?.files?.desc
                                 ?? "Browse quizzes, exams, homework, and reference docs.",
                             tags: fileTags,
-                            count: countLabel(files.count, "file"))
+                            count: countLabel(files.count, "file"),
+                            gradient: EE.redCardGrad, glowColor: EE.accent)
                 }
                 .buttonStyle(PressScaleStyle())
 
@@ -38,7 +39,8 @@ struct CourseDetailScreen: View {
                             subtitle: course?.sections?.links?.desc
                                 ?? "Curated simulators, explainers, and references.",
                             tags: ["Simulators", "Docs", "References"],
-                            count: countLabel(links.count, "link"))
+                            count: countLabel(links.count, "link"),
+                            gradient: EE.blueCardGrad, glowColor: EE.blue)
                 }
                 .buttonStyle(PressScaleStyle())
             }
