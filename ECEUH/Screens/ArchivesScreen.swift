@@ -29,6 +29,9 @@ struct ArchivesScreen: View {
         ]
     }
 
+    // One column on iPhone, two+ on iPad — a dedicated card per class.
+    private let columns = [GridItem(.adaptive(minimum: 320), spacing: 16)]
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -40,29 +43,22 @@ struct ArchivesScreen: View {
                 if shown.isEmpty {
                     ContentUnavailableView("No classes here yet", systemImage: "books.vertical",
                         description: Text("Classes appear as content is added."))
-                        .frame(height: 360)
+                        .frame(maxWidth: .infinity).frame(height: 360)
                 } else {
-                    // Swipeable deck — one course card per page, with page dots.
-                    TabView {
+                    LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(shown) { course in
-                            VStack(spacing: 0) {
-                                NavigationLink(value: Route.courseDetail(slug: course.slug)) {
-                                    CourseDeckCard(course: course)
-                                }
-                                .buttonStyle(.plain)
-                                Spacer(minLength: 0)
+                            NavigationLink(value: Route.courseDetail(slug: course.slug)) {
+                                ArchiveCard(course: course)
                             }
-                            .padding(.horizontal, 4)
+                            .buttonStyle(.plain)
                         }
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .always))
-                    .frame(height: 430)
-                    .id(filter)
                 }
 
                 Text("Quiz walkthroughs, exams, homework & formula sheets.")
                     .font(.caption).foregroundStyle(EE.textDim)
                     .frame(maxWidth: .infinity)
+                    .padding(.top, 4)
             }
             .padding(.horizontal, Spacing.gutter)
             .padding(.vertical, 4)
@@ -73,8 +69,8 @@ struct ArchivesScreen: View {
     }
 }
 
-/// A large, prominent course card for the Archives swipe deck.
-private struct CourseDeckCard: View {
+/// A dedicated course card for the Archives grid: cover art, code, title, units.
+private struct ArchiveCard: View {
     let course: Course
 
     private var hasArt: Bool { UIImage(named: artAsset(for: course.slug)) != nil }
@@ -82,16 +78,13 @@ private struct CourseDeckCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             cover
-                .frame(height: 190)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: Radii.lg, style: .continuous))
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(course.code)
                     .font(.eeMono(.caption2)).textCase(.uppercase).kerning(0.8)
                     .foregroundStyle(EE.accent)
                 Text(course.displayArchiveTitle)
-                    .font(.title2.weight(.bold)).foregroundStyle(EE.text)
+                    .font(.title3.weight(.bold)).foregroundStyle(EE.text)
                     .lineLimit(2).fixedSize(horizontal: false, vertical: true)
             }
 
@@ -101,7 +94,7 @@ private struct CourseDeckCard: View {
                     Text("·").foregroundStyle(EE.textDim)
                     Text(badge).font(.subheadline.weight(.semibold)).foregroundStyle(EE.accent)
                 }
-                Spacer()
+                Spacer(minLength: 0)
                 Label("Open", systemImage: "arrow.right")
                     .font(.subheadline.weight(.semibold)).foregroundStyle(EE.accent)
             }
@@ -114,16 +107,24 @@ private struct CourseDeckCard: View {
         .contentShape(Rectangle())
     }
 
-    @ViewBuilder private var cover: some View {
-        ZStack {
-            if hasArt {
-                Image(artAsset(for: course.slug)).resizable().scaledToFill()
-            } else {
-                LinearGradient(colors: [Color(hex: 0x7A0A16), .black],
-                               startPoint: .topLeading, endPoint: .bottomTrailing)
+    // Cover sized by aspect ratio (matches the 16:10 art) so it scales cleanly
+    // with the card width on any device instead of cropping to a fixed height.
+    private var cover: some View {
+        Color.clear
+            .aspectRatio(1.6, contentMode: .fit)
+            .frame(maxWidth: .infinity)
+            .overlay {
+                ZStack {
+                    if hasArt {
+                        Image(artAsset(for: course.slug)).resizable().scaledToFill()
+                    } else {
+                        LinearGradient(colors: [Color(hex: 0x7A0A16), .black],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    }
+                    EE.sheen
+                }
             }
-            EE.sheen
-        }
+            .clipShape(RoundedRectangle(cornerRadius: Radii.lg, style: .continuous))
     }
 }
 
