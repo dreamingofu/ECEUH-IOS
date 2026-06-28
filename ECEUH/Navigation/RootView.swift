@@ -42,6 +42,7 @@ struct RootView: View {
         case .clubDetail(let slug):   ClubDetailScreen(slug: slug)
         case .privacy:                PrivacyScreen()
         case .deleteAccount:          DeleteAccountScreen()
+        case .appIcon:                AppIconScreen()
         }
     }
 }

@@ -33,4 +33,5 @@ enum Route: Hashable {
     case clubDetail(slug: String)
     case privacy
     case deleteAccount
+    case appIcon
 }

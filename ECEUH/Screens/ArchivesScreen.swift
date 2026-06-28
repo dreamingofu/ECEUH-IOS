@@ -16,9 +16,25 @@ struct ArchivesScreen: View {
         }
     }
 
+    private var archiveStats: [StatSlideStat] {
+        let courses = coursesWithContent.count
+        let files = coursesWithContent.reduce(0) { $0 + (kCourseFiles[$1.slug]?.count ?? 0) }
+        let pdfs = coursesWithContent.reduce(0) { acc, c in
+            acc + (kCourseFiles[c.slug]?.reduce(0) { $0 + $1.versionCount } ?? 0)
+        }
+        return [
+            StatSlideStat(number: "\(courses)", bold: "courses", rest: "live now"),
+            StatSlideStat(number: "\(files)", bold: "files", rest: "to study"),
+            StatSlideStat(number: "\(pdfs)", bold: "PDFs", rest: "to grab"),
+        ]
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                StatSlide(kicker: "The library", heading: "Past papers, solved & sorted",
+                          stats: archiveStats)
+                SectionDivider(label: "Browse courses")
                 EESegmentedControl(options: options, selection: $filter)
 
                 if shown.isEmpty {
