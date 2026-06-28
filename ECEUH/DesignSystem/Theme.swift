@@ -84,6 +84,15 @@ enum EE {
         colors: [Color.white.opacity(0.08), Color.white.opacity(0)],
         startPoint: .top, endPoint: .center)
 
+    // ── Tinted hub-card fills (saturated at top-left → near-black) ─────────
+    static let blue = Color(hex: 0x3B82F6)
+    static let redCardGrad = LinearGradient(
+        colors: [Color(hex: 0xA8182E), Color(hex: 0x520C18), Color(hex: 0x130307)],
+        startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let blueCardGrad = LinearGradient(
+        colors: [Color(hex: 0x2A5FCF), Color(hex: 0x143A86), Color(hex: 0x070F22)],
+        startPoint: .topLeading, endPoint: .bottomTrailing)
+
     /// File-type accent color for a `FileType`.
     static func color(for type: FileType) -> Color {
         switch type {
