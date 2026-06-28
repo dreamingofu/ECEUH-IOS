@@ -4,6 +4,7 @@ struct FacultyScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
+                FacultyStatSlide()
                 ForEach(kProfessorCourses) { course in
                     CourseFacultySection(course: course)
                 }
@@ -17,6 +18,58 @@ struct FacultyScreen: View {
         }
         .background(EE.bg.ignoresSafeArea())
         .navigationTitle("Faculty")
+    }
+}
+
+/// A "stat slide" header (design `slides/04-stat.html`): a glowing dark panel
+/// with a red kicker, a heading, and three big red-gradient stat numbers.
+private struct FacultyStatSlide: View {
+    private var courseCount: Int { kProfessorCourses.count }
+    private var profCount: Int { Set(kProfessorCourses.flatMap { $0.profs.map(\.name) }).count }
+    private var topRating: Double { kProfessorCourses.flatMap(\.profs).compactMap(\.overall).max() ?? 0 }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("By the numbers")
+                    .font(.caption.weight(.bold)).textCase(.uppercase).kerning(1.5)
+                    .foregroundStyle(EE.accent)
+                Text("Faculty, rated by students")
+                    .font(.title2.weight(.heavy)).foregroundStyle(EE.text)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            HStack(alignment: .top, spacing: 14) {
+                stat("\(courseCount)", bold: "courses", rest: "with faculty")
+                stat("\(profCount)", bold: "professors", rest: "listed")
+                stat(String(format: "%.1f", topRating), bold: "top rating", rest: "from RMP")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(22)
+        .background {
+            ZStack {
+                EE.bgCard
+                RadialGradient(colors: [Color(hex: 0xEC1B34, alpha: 0.18), .clear],
+                               center: UnitPoint(x: 0.9, y: 0.08), startRadius: 0, endRadius: 340)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Radii.xl, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Radii.xl, style: .continuous).strokeBorder(EE.border))
+        .eeCardShadow()
+    }
+
+    private func stat(_ number: String, bold: String, rest: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(number)
+                .font(.largeTitle.weight(.heavy))
+                .foregroundStyle(EE.accentGrad)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+            (Text(bold).font(.caption2.weight(.semibold)).foregroundStyle(EE.text)
+                + Text(" \(rest)").font(.caption2).foregroundStyle(EE.textMuted))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
