@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// A course's File Library: color-coded file-type filter chips + the filtered
 /// file rows. Tapping a row previews it (or expands a multi-version file);
@@ -11,6 +12,10 @@ struct FileLibraryScreen: View {
     @State private var shareItem: ShareableURL?
     @State private var saving = false
     @State private var toast: String?
+    @State private var exportDoc: DataDocument?
+    @State private var exportName = "file.pdf"
+    @State private var exportType: UTType = .pdf
+    @State private var showExporter = false
 
     private var course: Course? { courseBySlug(slug) }
     private var files: [FileEntry] { kCourseFiles[slug] ?? [] }
@@ -58,6 +63,10 @@ struct FileLibraryScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $preview) { PreviewScreen(target: $0) }
         .sheet(item: $shareItem) { ShareSheet(items: [$0.url]) }
+        .fileExporter(isPresented: $showExporter, document: exportDoc,
+                      contentType: exportType, defaultFilename: exportName) { result in
+            if case .success = result { flashToast("Saved to Files") }
+        }
         .overlay { if saving { savingOverlay } }
         .overlay(alignment: .bottom) { toastView }
     }
@@ -95,11 +104,23 @@ struct FileLibraryScreen: View {
             .padding(.vertical, 8)
     }
 
+    /// Fetch the file's bytes, then present the system Save-to-Files picker so the
+    /// user chooses where it lands (iCloud Drive, On My iPad, the ECEUH folder…).
     private func save(_ version: FileVersion) async {
         saving = true
         defer { saving = false }
-        let ok = await ShareService.download(version.url) != nil
-        withAnimation { toast = ok ? "Saved to library" : "Couldn't save" }
+        guard let data = await ShareService.data(version.url) else {
+            flashToast("Couldn't download")
+            return
+        }
+        exportDoc = DataDocument(data)
+        exportName = ShareService.filename(version.url)
+        exportType = version.url.lowercased().hasSuffix(".pdf") ? .pdf : .data
+        showExporter = true
+    }
+
+    private func flashToast(_ message: String) {
+        withAnimation { toast = message }
         Task { try? await Task.sleep(for: .seconds(2)); withAnimation { toast = nil } }
     }
 

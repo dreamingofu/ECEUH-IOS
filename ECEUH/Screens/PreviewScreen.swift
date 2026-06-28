@@ -1,5 +1,6 @@
 import SwiftUI
 import PDFKit
+import UniformTypeIdentifiers
 
 /// A file the preview sheet can open.
 struct PreviewTarget: Identifiable, Hashable {
@@ -29,6 +30,11 @@ struct PreviewScreen: View {
     @State private var query = ""
     @FocusState private var searchFocused: Bool
 
+    @State private var exportDoc: DataDocument?
+    @State private var exportName = "file.pdf"
+    @State private var exportType: UTType = .pdf
+    @State private var showExporter = false
+
     private var remoteURL: URL {
         URL(string: target.url) ?? URL(string: "https://eceuh.com")!
     }
@@ -44,6 +50,10 @@ struct PreviewScreen: View {
                 .overlay(alignment: .bottom) { bottomOverlay }
                 .overlay { if saving { savingOverlay } }
                 .sheet(item: $shareItem) { ShareSheet(items: [$0.url]) }
+                .fileExporter(isPresented: $showExporter, document: exportDoc,
+                              contentType: exportType, defaultFilename: exportName) { result in
+                    if case .success = result { showToast("Saved to Files") }
+                }
                 .task { await load() }
         }
     }
@@ -224,14 +234,19 @@ struct PreviewScreen: View {
         stage = .failed
     }
 
+    /// Fetch the file's bytes, then present the system Save-to-Files picker so the
+    /// user chooses where it lands (iCloud Drive, On My iPad, the ECEUH folder…).
     private func save() async {
         saving = true
         defer { saving = false }
-        if await ShareService.download(target.url) != nil {
-            showToast("Saved to Files")
-        } else {
-            showToast("Couldn't save")
+        guard let data = await ShareService.data(target.url) else {
+            showToast("Couldn't download")
+            return
         }
+        exportDoc = DataDocument(data)
+        exportName = ShareService.filename(target.url)
+        exportType = isPDF ? .pdf : .data
+        showExporter = true
     }
 
     private func showToast(_ message: String) {
