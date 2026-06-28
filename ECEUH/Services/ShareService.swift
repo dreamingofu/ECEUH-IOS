@@ -29,6 +29,19 @@ enum ShareService {
         }
     }
 
+    /// Fetch a file's bytes for export, reusing the on-disk PDF cache when present
+    /// (so a file you just previewed exports instantly).
+    static func data(_ urlString: String) async -> Data? {
+        if urlString.lowercased().hasSuffix(".pdf"), let cached = PDFCache.cachedFile(for: urlString) {
+            return try? Data(contentsOf: cached)
+        }
+        guard let url = URL(string: urlString) else { return nil }
+        return try? await URLSession.shared.data(from: url).0
+    }
+
+    /// A suggested filename for a URL (decoded last path component).
+    static func filename(_ urlString: String) -> String { inferredFilename(from: urlString) }
+
     private static func inferredFilename(from urlString: String) -> String {
         let clean = urlString.components(separatedBy: "?").first ?? urlString
         let last = (clean.components(separatedBy: "/").last ?? "")
