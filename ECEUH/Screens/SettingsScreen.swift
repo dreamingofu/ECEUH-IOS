@@ -26,7 +26,15 @@ struct SettingsScreen: View {
                 SRow(icon: "moon.fill", iconColor: Color(hex: 0x5856D6), title: "Dark mode") {
                     Toggle("", isOn: darkBinding).labelsHidden().tint(EE.accent)
                 }
-                SRow(icon: "bolt.fill", iconColor: EE.accent, title: "App icon", value: "Scarlet")
+                HStack(spacing: 12) {
+                    Image("AppLogo")
+                        .resizable().scaledToFill()
+                        .frame(width: 30, height: 30)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    Text("App icon").foregroundStyle(EE.text)
+                    Spacer()
+                    Text("Ember").foregroundStyle(EE.textMuted)
+                }
             }
 
             Section {
