@@ -8,21 +8,26 @@ struct PreviewTarget: Identifiable, Hashable {
     var id: String { url }
 }
 
-/// In-app file preview. PDFs render natively with **PDFKit** (`PDFView`) — fast,
-/// GPU-accelerated, with pinch-zoom and continuous scroll. If a PDF can't be
-/// parsed it falls back to QuickLook over a downloaded copy; non-PDF URLs load in
-/// a web view. Toolbar offers open-in-Safari, share, and save-to-Files.
+/// In-app file preview. PDFs render natively with **PDFKit** — page indicator,
+/// a tappable thumbnail strip, in-document find, and an on-disk cache so
+/// re-opens are instant. If a PDF can't be parsed it falls back to QuickLook
+/// over a downloaded copy; non-PDF URLs load in a web view. Toolbar offers
+/// open-in-Safari, share, and save-to-Files.
 struct PreviewScreen: View {
     let target: PreviewTarget
     @Environment(\.dismiss) private var dismiss
 
     private enum Stage { case loading, pdf, quicklook, web, failed }
     @State private var stage: Stage = .loading
-    @State private var document: PDFDocument?
+    @State private var reader = PDFReader()
     @State private var localURL: URL?
     @State private var saving = false
     @State private var shareItem: ShareableURL?
     @State private var toast: String?
+    @State private var showThumbnails = false
+    @State private var searching = false
+    @State private var query = ""
+    @FocusState private var searchFocused: Bool
 
     private var remoteURL: URL {
         URL(string: target.url) ?? URL(string: "https://eceuh.com")!
@@ -32,12 +37,12 @@ struct PreviewScreen: View {
     var body: some View {
         NavigationStack {
             content
-                .ignoresSafeArea(edges: .bottom)
                 .navigationTitle(target.title)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbar }
+                .overlay(alignment: .top) { if searching { searchBar } }
+                .overlay(alignment: .bottom) { bottomOverlay }
                 .overlay { if saving { savingOverlay } }
-                .overlay(alignment: .bottom) { toastView }
                 .sheet(item: $shareItem) { ShareSheet(items: [$0.url]) }
                 .task { await load() }
         }
@@ -49,11 +54,11 @@ struct PreviewScreen: View {
         case .loading:
             loadingView
         case .pdf:
-            if let document { PDFKitView(document: document) } else { failedView }
+            PDFKitView(reader: reader).ignoresSafeArea(edges: .bottom)
         case .quicklook:
-            if let localURL { QuickLookPreview(url: localURL) } else { failedView }
+            if let localURL { QuickLookPreview(url: localURL).ignoresSafeArea(edges: .bottom) } else { failedView }
         case .web:
-            WebView(url: remoteURL)
+            WebView(url: remoteURL).ignoresSafeArea(edges: .bottom)
         case .failed:
             failedView
         }
@@ -81,6 +86,8 @@ struct PreviewScreen: View {
         }
     }
 
+    // MARK: Toolbar
+
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
@@ -88,13 +95,87 @@ struct PreviewScreen: View {
                 .accessibilityLabel("Close")
         }
         ToolbarItemGroup(placement: .primaryAction) {
-            Button { ShareService.openExternal(target.url) } label: { Image(systemName: "safari") }
-                .accessibilityLabel("Open in browser")
-            Button { shareItem = ShareableURL(url: remoteURL) } label: { Image(systemName: "square.and.arrow.up") }
-                .accessibilityLabel("Share")
-            Button { Task { await save() } } label: { Image(systemName: "arrow.down.to.line") }
-                .accessibilityLabel("Save to Files")
+            if stage == .pdf {
+                Button { openSearch() } label: { Image(systemName: "magnifyingglass") }
+                    .accessibilityLabel("Find in document")
+                Button {
+                    withAnimation(.easeOut(duration: 0.2)) { showThumbnails.toggle() }
+                } label: {
+                    Image(systemName: showThumbnails ? "square.grid.2x2.fill" : "square.grid.2x2")
+                }
+                .accessibilityLabel("Toggle thumbnails")
+            }
+            Menu {
+                Button { ShareService.openExternal(target.url) } label: { Label("Open in browser", systemImage: "safari") }
+                Button { shareItem = ShareableURL(url: remoteURL) } label: { Label("Share", systemImage: "square.and.arrow.up") }
+                Button { Task { await save() } } label: { Label("Save to Files", systemImage: "arrow.down.to.line") }
+            } label: { Image(systemName: "ellipsis.circle") }
         }
+    }
+
+    // MARK: Search bar (top)
+
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass").font(.subheadline).foregroundStyle(EE.textDim)
+            TextField("Find in document", text: $query)
+                .focused($searchFocused)
+                .submitLabel(.search)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .foregroundStyle(EE.text)
+                .onChange(of: query) { _, q in reader.search(q) }
+                .onSubmit { reader.nextMatch() }
+            if reader.matchCount > 0 {
+                Text("\(reader.currentMatch)/\(reader.matchCount)")
+                    .font(.eeMono(.caption2)).foregroundStyle(EE.textMuted).monospacedDigit()
+                Button { reader.prevMatch() } label: { Image(systemName: "chevron.up") }
+                    .accessibilityLabel("Previous match")
+                Button { reader.nextMatch() } label: { Image(systemName: "chevron.down") }
+                    .accessibilityLabel("Next match")
+            } else if query.count >= 2 {
+                Text("No matches").font(.caption2).foregroundStyle(EE.textDim)
+            }
+            Button { closeSearch() } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(EE.textDim) }
+                .accessibilityLabel("Close search")
+        }
+        .font(.subheadline)
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .frame(maxWidth: .infinity)
+        .background(.regularMaterial)
+        .overlay(alignment: .bottom) { Divider().overlay(EE.separator) }
+        .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    // MARK: Bottom overlay (toast + page pill + thumbnails)
+
+    @ViewBuilder
+    private var bottomOverlay: some View {
+        VStack(spacing: 10) {
+            if let toast {
+                Text(toast).font(.subheadline.weight(.medium)).foregroundStyle(EE.text)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(.regularMaterial, in: Capsule())
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            if stage == .pdf, reader.pageCount > 1 {
+                Text("\(reader.currentPage) / \(reader.pageCount)")
+                    .font(.eeMono(.caption)).foregroundStyle(EE.text).monospacedDigit()
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(.regularMaterial, in: Capsule())
+                    .overlay(Capsule().strokeBorder(EE.border))
+            }
+            if stage == .pdf, showThumbnails {
+                PDFThumbnailStrip(pdfView: reader.view)
+                    .frame(maxWidth: .infinity).frame(height: 70)
+                    .background(.ultraThinMaterial)
+                    .overlay(alignment: .top) { Divider().overlay(EE.separator) }
+                    .transition(.move(edge: .bottom))
+            }
+        }
+        .padding(.bottom, showThumbnails ? 0 : 14)
+        .animation(.easeOut(duration: 0.2), value: showThumbnails)
+        .animation(.easeOut(duration: 0.2), value: toast)
     }
 
     private var savingOverlay: some View {
@@ -103,29 +184,35 @@ struct PreviewScreen: View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
-    @ViewBuilder
-    private var toastView: some View {
-        if let toast {
-            Text(toast)
-                .font(.subheadline.weight(.medium))
-                .padding(.horizontal, 16).padding(.vertical, 10)
-                .background(.regularMaterial, in: Capsule())
-                .padding(.bottom, 24)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-        }
+    // MARK: Actions
+
+    private func openSearch() {
+        withAnimation(.easeOut(duration: 0.2)) { searching = true }
+        searchFocused = true
     }
 
-    // MARK: Loading
+    private func closeSearch() {
+        searchFocused = false
+        withAnimation(.easeOut(duration: 0.2)) { searching = false }
+        query = ""
+        reader.clearSearch()
+    }
 
-    /// Render PDFs natively with PDFKit; fall back to a downloaded copy in
-    /// QuickLook, then to a web view / error. Non-PDF URLs load in the web view.
+    /// Render PDFs natively with PDFKit, hitting the on-disk cache first; fall
+    /// back to a downloaded copy in QuickLook, then to a web view / error.
     private func load() async {
         guard stage == .loading else { return }
         guard isPDF else { stage = .web; return }
 
+        if let cached = PDFCache.cachedFile(for: target.url), let doc = PDFDocument(url: cached) {
+            reader.setDocument(doc)
+            stage = .pdf
+            return
+        }
         if let (data, _) = try? await URLSession.shared.data(from: remoteURL),
            let doc = PDFDocument(data: data) {
-            document = doc
+            PDFCache.store(data, for: target.url)
+            reader.setDocument(doc)
             stage = .pdf
             return
         }
