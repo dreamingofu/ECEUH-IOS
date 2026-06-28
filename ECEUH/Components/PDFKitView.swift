@@ -1,25 +1,30 @@
 import SwiftUI
 import PDFKit
 
-/// Native PDF renderer (`PDFKit.PDFView`) — GPU-accelerated, with pinch-zoom,
-/// continuous vertical scroll, text selection, and tappable links. The fast,
-/// responsive, fully-native viewer for an iOS-only app.
+/// Hosts the shared `PDFView` owned by a `PDFReader` — GPU-accelerated, with
+/// pinch-zoom, continuous vertical scroll, text selection, and tappable links.
 struct PDFKitView: UIViewRepresentable {
-    let document: PDFDocument
+    let reader: PDFReader
 
-    func makeUIView(context: Context) -> PDFView {
-        let view = PDFView()
-        view.document = document
-        view.autoScales = true                 // fit-to-width, then free pinch-zoom
-        view.displayMode = .singlePageContinuous
-        view.displayDirection = .vertical
-        view.pageShadowsEnabled = true          // frame each page on the dark bg
-        view.backgroundColor = UIColor(EE.bg)
-        view.maxScaleFactor = 6
-        return view
+    func makeUIView(context: Context) -> PDFView { reader.view }
+    func updateUIView(_ view: PDFView, context: Context) {}
+}
+
+/// Native horizontal thumbnail strip linked to a `PDFView`; tapping a thumbnail
+/// jumps the view to that page (and the current page stays highlighted).
+struct PDFThumbnailStrip: UIViewRepresentable {
+    let pdfView: PDFView
+
+    func makeUIView(context: Context) -> PDFThumbnailView {
+        let strip = PDFThumbnailView()
+        strip.pdfView = pdfView
+        strip.layoutMode = .horizontal
+        strip.thumbnailSize = CGSize(width: 44, height: 58)
+        strip.backgroundColor = .clear
+        return strip
     }
 
-    func updateUIView(_ view: PDFView, context: Context) {
-        if view.document !== document { view.document = document }
+    func updateUIView(_ strip: PDFThumbnailView, context: Context) {
+        strip.pdfView = pdfView
     }
 }
