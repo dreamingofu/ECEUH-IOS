@@ -27,6 +27,8 @@ enum AppTab: Int, CaseIterable, Identifiable {
 /// Typed navigation destinations pushed within a tab's `NavigationStack`.
 enum Route: Hashable {
     case courseDetail(slug: String)
+    case fileLibrary(slug: String)
+    case externalLinks(slug: String)
     case clubs
     case clubDetail(slug: String)
     case privacy

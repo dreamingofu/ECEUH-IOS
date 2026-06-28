@@ -36,6 +36,8 @@ struct RootView: View {
     private func routeDestination(_ route: Route) -> some View {
         switch route {
         case .courseDetail(let slug): CourseDetailScreen(slug: slug)
+        case .fileLibrary(let slug):  FileLibraryScreen(slug: slug)
+        case .externalLinks(let slug): ExternalLinksScreen(slug: slug)
         case .clubs:                  ClubsScreen()
         case .clubDetail(let slug):   ClubDetailScreen(slug: slug)
         case .privacy:                PrivacyScreen()
