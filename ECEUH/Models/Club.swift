@@ -1,27 +1,41 @@
-import Foundation
+import SwiftUI
 
-/// A student organization. 1:1 port of `lib/models/club.dart`.
-/// The Flutter `IconData` becomes `iconKey` (the original Material icon name);
-/// `symbolName` resolves it to an SF Symbol via `SFSymbol.forClub`.
+/// Category buckets in the UH Cullen College of Engineering club directory.
+enum ClubCategory: String, CaseIterable, Hashable {
+    case engineering = "Engineering"
+    case technology = "Technology"
+    case honorSociety = "Honor Society"
+
+    /// Accent color used for the club's avatar tile and category label.
+    var color: Color {
+        switch self {
+        case .engineering:  EE.accent
+        case .technology:   EE.blue
+        case .honorSociety: EE.exam
+        }
+    }
+}
+
+/// A UH student organization (source: official Cullen College club directory).
 struct Club: Identifiable, Hashable {
-    let name: String
     let slug: String
-    let description: String
-    let iconKey: String
+    let name: String
+    let acronym: String?
+    let category: ClubCategory
+    let email: String?
+    let website: String?
     let tags: [String]
-    var logoAsset: String? = nil
-    var meetingTime: String? = nil
-    var location: String? = nil
-    var contactEmail: String? = nil
-    var instagramUrl: String? = nil
-    var discordUrl: String? = nil
-    var websiteUrl: String? = nil
+    let featured: Bool
+    var isActive: Bool = true
 
     var id: String { slug }
 
-    var symbolName: String { SFSymbol.forClub(iconKey) }
+    var hasLinks: Bool { email != nil || website != nil }
 
-    var hasLinks: Bool {
-        instagramUrl != nil || discordUrl != nil || websiteUrl != nil || contactEmail != nil
+    /// Short label for the avatar tile — the acronym, else the name's initials.
+    var badge: String {
+        if let acronym, !acronym.isEmpty { return acronym }
+        let initials = name.split(separator: " ").prefix(3).compactMap { $0.first }
+        return String(initials).uppercased()
     }
 }
