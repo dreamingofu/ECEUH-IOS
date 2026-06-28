@@ -30,11 +30,6 @@ struct ArchivesScreen: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    Button { selectTab(.faculty) } label: {
-                        CourseCard(code: "RMP", name: "Professor Ratings", artAsset: "art-rmp",
-                                   units: "Faculty", badge: "Reference")
-                    }
-                    .buttonStyle(.plain)
                 }
                 Text("Quiz walkthroughs, exams, homework & formula sheets.")
                     .font(.caption).foregroundStyle(EE.textDim)
