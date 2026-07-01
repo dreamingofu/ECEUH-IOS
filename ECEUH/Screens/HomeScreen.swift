@@ -14,22 +14,153 @@ func courseBadge(for slug: String) -> String? {
     }
 }
 
-/// Home is reserved for unique, app-only features. It deliberately carries no
-/// archive or faculty content — just the quote header for now; the rest is TBD.
+/// Home is reserved for unique, app-only features: a search box over the whole
+/// app, the quote header, a per-session Clubs spotlight, and the personal planner.
 struct HomeScreen: View {
     var selectTab: (AppTab) -> Void = { _ in }
+
+    @Environment(CalendarStore.self) private var calendar
+    @State private var query = ""
+    @FocusState private var searchFocused: Bool
+
+    private var trimmedQuery: String { query.trimmingCharacters(in: .whitespaces) }
+    private var searching: Bool { !trimmedQuery.isEmpty }
+    private var results: [SearchResult] { AppSearch.results(for: query) }
+
+    private var activeClubCount: Int { kClubs.filter(\.isActive).count }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                HomeQuoteSlide()
+                searchField
+
+                if searching {
+                    searchResults
+                } else {
+                    HomeQuoteSlide()
+                    clubsCard
+                    plannerCard
+                }
             }
             .padding(.horizontal, Spacing.gutter)
             .padding(.vertical, 4)
             .padding(.bottom, 24)
+            .animation(.easeInOut(duration: 0.18), value: searching)
         }
         .background(EE.bg.ignoresSafeArea())
         .navigationTitle("ECEUH")
+        .scrollDismissesKeyboard(.interactively)
+    }
+
+    // MARK: Search
+
+    private var searchField: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass").foregroundStyle(EE.textDim)
+            TextField("Search courses, files, clubs, faculty…", text: $query)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+                .focused($searchFocused)
+                .foregroundStyle(EE.text)
+            if !query.isEmpty {
+                Button {
+                    query = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(EE.textDim)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, 14).padding(.vertical, 11)
+        .background(EE.bgCard, in: RoundedRectangle(cornerRadius: Radii.md, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Radii.md, style: .continuous)
+            .strokeBorder(searchFocused ? EE.accentLine : EE.border,
+                          lineWidth: searchFocused ? 1.5 : 1))
+    }
+
+    @ViewBuilder private var searchResults: some View {
+        if results.isEmpty {
+            ContentUnavailableView.search(text: trimmedQuery)
+                .frame(maxWidth: .infinity).padding(.vertical, 44)
+        } else {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("\(results.count) result\(results.count == 1 ? "" : "s")")
+                    .font(.caption.weight(.semibold)).foregroundStyle(EE.textDim)
+                    .padding(.leading, 2)
+                VStack(spacing: 8) {
+                    ForEach(results) { result in
+                        SearchResultRow(result: result) { tab in
+                            query = ""
+                            searchFocused = false
+                            selectTab(tab)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: Cards
+
+    private var clubsCard: some View {
+        NavigationLink(value: Route.clubs) {
+            HubCard(icon: "person.3.fill",
+                    title: "Clubs & Orgs",
+                    subtitle: "Explore \(activeClubCount) UH Cullen student organizations — engineering societies, technical teams, and honor societies.",
+                    tags: ["Engineering", "Technology", "Honor"],
+                    count: "\(activeClubCount)",
+                    open: "Browse clubs",
+                    gradient: SessionAccent.clubGradient.gradient,
+                    glowColor: SessionAccent.clubGradient.glowColor)
+        }
+        .buttonStyle(PressScaleStyle())
+    }
+
+    private var plannerCard: some View {
+        NavigationLink(value: Route.calendar) {
+            PlannerHomeCard(next: calendar.upcoming.first, count: calendar.upcoming.count)
+        }
+        .buttonStyle(PressScaleStyle())
+    }
+}
+
+/// One global-search hit. Routes push within the Home stack; a tab destination
+/// (faculty) switches tabs via the `onTab` callback.
+private struct SearchResultRow: View {
+    let result: SearchResult
+    var onTab: (AppTab) -> Void
+
+    var body: some View {
+        switch result.destination {
+        case .route(let route):
+            NavigationLink(value: route) { content }
+                .buttonStyle(PressScaleStyle())
+        case .tab(let tab):
+            Button { onTab(tab) } label: { content }
+                .buttonStyle(PressScaleStyle())
+        }
+    }
+
+    private var content: some View {
+        HStack(spacing: 12) {
+            IconTile(systemName: result.kind.icon, color: result.kind.tint, size: 36)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(result.title)
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(EE.text).lineLimit(1)
+                Text(result.subtitle)
+                    .font(.footnote).foregroundStyle(EE.textDim).lineLimit(1)
+            }
+            Spacer(minLength: 8)
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.bold)).foregroundStyle(EE.textFaint)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(EE.bgCard, in: RoundedRectangle(cornerRadius: Radii.md, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Radii.md, style: .continuous).strokeBorder(EE.border))
+        .contentShape(Rectangle())
     }
 }
 
@@ -76,5 +207,7 @@ private struct HomeQuoteSlide: View {
 }
 
 #Preview {
-    NavigationStack { HomeScreen() }.preferredColorScheme(.dark)
+    NavigationStack { HomeScreen() }
+        .environment(CalendarStore(notifications: NotificationService(), calendarSync: CalendarSyncService()))
+        .preferredColorScheme(.dark)
 }
