@@ -20,7 +20,9 @@ struct HomeScreen: View {
     var selectTab: (AppTab) -> Void = { _ in }
 
     @Environment(CalendarStore.self) private var calendar
+    @Environment(SemesterStore.self) private var semester
     @State private var query = ""
+    @State private var showingSemesterSetup = false
     @FocusState private var searchFocused: Bool
 
     private var trimmedQuery: String { query.trimmingCharacters(in: .whitespaces) }
@@ -38,8 +40,9 @@ struct HomeScreen: View {
                     searchResults
                 } else {
                     HomeQuoteSlide()
-                    clubsCard
+                    activeCoursesCard
                     plannerCard
+                    clubsCard
                 }
             }
             .padding(.horizontal, Spacing.gutter)
@@ -50,6 +53,9 @@ struct HomeScreen: View {
         .background(EE.bg.ignoresSafeArea())
         .navigationTitle("ECEUH")
         .scrollDismissesKeyboard(.interactively)
+        .sheet(isPresented: $showingSemesterSetup) {
+            SemesterSetupSheet(store: semester)
+        }
     }
 
     // MARK: Search
@@ -103,6 +109,10 @@ struct HomeScreen: View {
     }
 
     // MARK: Cards
+
+    private var activeCoursesCard: some View {
+        ActiveCoursesCard(store: semester) { showingSemesterSetup = true }
+    }
 
     private var clubsCard: some View {
         NavigationLink(value: Route.clubs) {
@@ -209,5 +219,6 @@ private struct HomeQuoteSlide: View {
 #Preview {
     NavigationStack { HomeScreen() }
         .environment(CalendarStore(notifications: NotificationService(), calendarSync: CalendarSyncService()))
+        .environment(SemesterStore())
         .preferredColorScheme(.dark)
 }

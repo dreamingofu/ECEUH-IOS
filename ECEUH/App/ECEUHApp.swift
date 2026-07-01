@@ -9,6 +9,7 @@ struct ECEUHApp: App {
     @State private var calendar: CalendarStore
     @State private var calendarSync = CalendarSyncService()
     @State private var gmail = GmailScanService()
+    @State private var semester = SemesterStore()
 
     init() {
         // The planner store schedules reminders and mirrors events to the device
@@ -31,6 +32,7 @@ struct ECEUHApp: App {
                 .environment(calendar)
                 .environment(calendarSync)
                 .environment(gmail)
+                .environment(semester)
                 .preferredColorScheme(theme.colorScheme)
                 .task { await auth.start() }
                 .task { calendar.reschedule() }  // self-heal planner reminders on launch
