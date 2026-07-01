@@ -60,6 +60,11 @@ final class AuthService {
         hydrateProfile()
         didResolve = true
         for await change in client.auth.authStateChanges {
+            // With `emitLocalSessionAsInitialSession`, the initial event can carry
+            // an expired stored session — don't treat that as signed-in. A valid
+            // session still arrives via signIn / tokenRefreshed (auto-refresh),
+            // and sign-out carries a nil session (which falls through to clear it).
+            if let incoming = change.session, incoming.isExpired { continue }
             session = change.session
             hydrateProfile()
         }

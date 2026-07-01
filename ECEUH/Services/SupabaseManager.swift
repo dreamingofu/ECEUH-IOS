@@ -19,7 +19,21 @@ enum SupabaseManager {
     static let client: SupabaseClient = {
         let url = validatedURL ?? URL(string: "https://placeholder.supabase.co")!
         let key = AppConfig.supabaseAnonKey.isEmpty ? "placeholder" : AppConfig.supabaseAnonKey
-        return SupabaseClient(supabaseURL: url, supabaseKey: key)
+        return SupabaseClient(
+            supabaseURL: url,
+            supabaseKey: key,
+            options: SupabaseClientOptions(
+                auth: SupabaseClientOptions.AuthOptions(
+                    // Keep the SDK's default keychain storage (so existing sessions
+                    // persist), but adopt the upcoming v3 behavior now: the locally
+                    // stored session is emitted immediately as the initial session.
+                    // `AuthService` guards on `isExpired`. This also silences the
+                    // SDK's deprecation notice about the initial-session change.
+                    storage: AuthClient.Configuration.defaultLocalStorage,
+                    emitLocalSessionAsInitialSession: true
+                )
+            )
+        )
     }()
 
     static var isConfigured: Bool {

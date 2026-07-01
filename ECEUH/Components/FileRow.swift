@@ -35,8 +35,22 @@ struct FileRow: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .background(EE.bgCard, in: RoundedRectangle(cornerRadius: Radii.lg, style: .continuous))
+        // Tint the whole card in its file-type color (the same color as the filter
+        // chips) so the content type reads at a glance — red quiz, amber exam,
+        // green homework, and so on.
+        .background {
+            ZStack {
+                EE.bgCard
+                LinearGradient(colors: [typeColor.opacity(0.22), typeColor.opacity(0.06)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Radii.lg, style: .continuous))
+        // Neutral hairline floor keeps every card defined (even low-chroma gray/
+        // green in light mode), with the type color layered on top for vivid types.
         .overlay(RoundedRectangle(cornerRadius: Radii.lg, style: .continuous).strokeBorder(EE.border))
+        .overlay(RoundedRectangle(cornerRadius: Radii.lg, style: .continuous)
+            .strokeBorder(typeColor.opacity(0.45), lineWidth: 1))
     }
 
     // MARK: Header — tap previews (single) or expands (multi)
@@ -51,7 +65,11 @@ struct FileRow: View {
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
+                    // Solid backing + type-color ring so the badge still reads as a
+                    // distinct chip against the same-color card tint behind it.
                     Badge(type: file.type, label: file.label)
+                        .background(EE.bgCard, in: Capsule())
+                        .overlay(Capsule().strokeBorder(typeColor.opacity(0.45)))
                     Spacer(minLength: 8)
                     meta
                 }
