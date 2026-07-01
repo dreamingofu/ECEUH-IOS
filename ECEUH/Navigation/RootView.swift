@@ -40,6 +40,7 @@ struct RootView: View {
         case .externalLinks(let slug): ExternalLinksScreen(slug: slug)
         case .clubs:                  ClubsScreen()
         case .clubDetail(let slug):   ClubDetailScreen(slug: slug)
+        case .calendar:               CalendarScreen()
         case .privacy:                PrivacyScreen()
         case .deleteAccount:          DeleteAccountScreen()
         case .appIcon:                AppIconScreen()
@@ -53,4 +54,7 @@ struct RootView: View {
         .environment(NotificationService())
         .environment(AuthService())
         .environment(ProgressService())
+        .environment(CalendarStore(notifications: NotificationService(), calendarSync: CalendarSyncService()))
+        .environment(CalendarSyncService())
+        .environment(GmailScanService())
 }

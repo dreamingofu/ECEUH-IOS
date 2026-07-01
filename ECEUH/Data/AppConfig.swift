@@ -10,4 +10,9 @@ enum AppConfig {
 
     static let supabaseURL = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String ?? ""
     static let supabaseAnonKey = Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String ?? ""
+
+    /// Google OAuth **iOS** client ID for the Gmail scan feature (empty until a
+    /// `Secrets.xcconfig` supplies it — see `docs/GOOGLE_SETUP.md`). Format:
+    /// `NNN-xyz.apps.googleusercontent.com`.
+    static let googleClientID = Bundle.main.infoDictionary?["GOOGLE_OAUTH_CLIENT_ID"] as? String ?? ""
 }

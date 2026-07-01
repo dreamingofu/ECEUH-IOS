@@ -31,6 +31,7 @@ enum Route: Hashable {
     case externalLinks(slug: String)
     case clubs
     case clubDetail(slug: String)
+    case calendar
     case privacy
     case deleteAccount
     case appIcon

@@ -30,6 +30,12 @@
 	<string>$(SUPABASE_URL)</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
+	<key>GOOGLE_OAUTH_CLIENT_ID</key>
+	<string>$(GOOGLE_OAUTH_CLIENT_ID)</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>ECEUH adds your quiz and exam dates to your calendar so they sync to Apple or Google Calendar.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>ECEUH adds your quiz and exam dates to your calendar so they sync to Apple or Google Calendar.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
