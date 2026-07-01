@@ -4,7 +4,6 @@ struct SettingsScreen: View {
     @Environment(ThemeService.self) private var theme
     @Environment(NotificationService.self) private var notifications
     @Environment(AuthService.self) private var auth
-    @Environment(CalendarStore.self) private var calendar
 
     @State private var presentingSignIn = false
     @AppStorage("settings.icloudSync") private var icloudSync = false
@@ -54,13 +53,6 @@ struct SettingsScreen: View {
             footer: { Text("Get notified when new quiz solutions and exam reviews are posted.") }
 
             Section("Library") {
-                NavigationLink(value: Route.calendar) {
-                    SRow(icon: "calendar", iconColor: EE.accent, title: "Planner",
-                         value: calendar.upcoming.isEmpty ? nil : "\(calendar.upcoming.count)")
-                }
-                NavigationLink(value: Route.clubs) {
-                    SRow(icon: "person.3.fill", iconColor: EE.lab, title: "Clubs", value: "\(kClubs.count)")
-                }
                 SRow(icon: "arrow.down.circle.fill", iconColor: EE.homework, title: "Saved files", value: "\(savedCount)")
             }
 
@@ -158,6 +150,5 @@ private extension SRow where Trailing == EmptyView {
         .environment(ThemeService())
         .environment(NotificationService())
         .environment(AuthService())
-        .environment(CalendarStore(notifications: NotificationService(), calendarSync: CalendarSyncService()))
         .preferredColorScheme(.dark)
 }

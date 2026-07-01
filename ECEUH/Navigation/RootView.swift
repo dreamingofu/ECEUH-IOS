@@ -57,4 +57,5 @@ struct RootView: View {
         .environment(CalendarStore(notifications: NotificationService(), calendarSync: CalendarSyncService()))
         .environment(CalendarSyncService())
         .environment(GmailScanService())
+        .environment(SemesterStore())
 }
